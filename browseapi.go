@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-const home = "/Users/lima/"
+const home = os.Getenv("home")
 
 type directoryEntry struct {
 	Name      string

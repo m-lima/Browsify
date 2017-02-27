@@ -172,7 +172,7 @@ func launchServer(patter http.Handler) {
 	{
 		go func() {
 			defer waiter.Done()
-			err := http.ListenAndServeTLS("", "server.crt", "server.key", patter)
+			err := http.ListenAndServeTLS("", "server.crt.hide", "server.key.hide", patter)
 			if err != nil {
 				log.Fatal("Could not start HTTPS server:\n", err)
 			}
@@ -183,7 +183,7 @@ func launchServer(patter http.Handler) {
 }
 
 func main() {
-	clientId, clientSecret, err := loadOauthConfig("oauth.client.id", "oauth.client.secret")
+	clientId, clientSecret, err := loadOauthConfig("oauth.client.id.hide", "oauth.client.secret.hide")
 	if err != nil {
 		log.Fatal("Failed loading oauth config files:\n", err)
 		return
