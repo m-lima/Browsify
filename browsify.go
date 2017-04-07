@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"strings"
 	"sync"
@@ -12,14 +11,10 @@ import (
 	"net/http"
 
 	"github.com/gorilla/pat"
-	"github.com/gorilla/sessions"
-	"github.com/markbates/goth"
-	"github.com/markbates/goth/gothic"
-	"github.com/markbates/goth/providers/openidConnect"
+	"github.com/m-lima/browsify/auther"
 )
 
 const browse = "/browse"
-const providerName = "openid-connect"
 
 const pageHeader = `
 <html>
@@ -34,27 +29,16 @@ const linkString = `
 		<br>
 `
 
-func init() {
-	store := sessions.NewFilesystemStore(os.TempDir(), []byte("browsify"))
-	store.MaxLength(math.MaxInt64)
-	gothic.Store = store
-
-	gothic.GetProviderName = func(request *http.Request) (string, error) {
-		return providerName, nil
-	}
-}
-
-func authCallback(response http.ResponseWriter, request *http.Request) {
-	_, err := gothic.CompleteUserAuth(response, request)
-	if err != nil {
-		fmt.Fprintln(response, err)
-		return
-	}
-	http.Redirect(response, request, browse, 302)
-}
-
 func indexHandler(response http.ResponseWriter, request *http.Request) {
-	http.Redirect(response, request, browse, 302)
+	user, err := auther.GetUser(response, request)
+	if err == nil {
+		fmt.Fprintf(response, "Logged in as "+user.Name)
+	} else {
+		fmt.Fprintf(response, "Nope")
+	}
+
+	// http.Redirect(response, request, browse, 302)
+
 	// if _, err := gothic.CompleteUserAuth(response, request); err == nil {
 	// 	http.Redirect(response, request, browse, 302)
 	// 	return
@@ -64,13 +48,18 @@ func indexHandler(response http.ResponseWriter, request *http.Request) {
 }
 
 func browseHandler(response http.ResponseWriter, request *http.Request) {
-	if _, err := gothic.CompleteUserAuth(response, request); err != nil {
-		gothic.BeginAuthHandler(response, request)
-		return
-	}
+	// if _, err := gothic.CompleteUserAuth(response, request); err != nil {
+	// 	gothic.BeginAuthHandler(response, request)
+	// 	return
+	// }
+
+	// if true {
+	// 	BrowseHandler(response, request)
+	// 	return
+	// }
 
 	path := request.URL.Path
-	systemPath := ""
+	var systemPath string
 
 	if path == browse || path == browse+"/" {
 		systemPath = home
@@ -79,8 +68,10 @@ func browseHandler(response http.ResponseWriter, request *http.Request) {
 		if path[len(path)-1] == '/' {
 			path = path[:len(path)-1]
 		}
-		systemPath = home + path[len(browse)+1:]
+		systemPath = home + "/" + path[len(browse)+1:]
 	}
+
+	fmt.Println(systemPath)
 
 	// Try folder
 	{
@@ -122,34 +113,25 @@ func browseHandler(response http.ResponseWriter, request *http.Request) {
 	fmt.Fprint(response, "404 Not found")
 }
 
-func logoutHandler(response http.ResponseWriter, request *http.Request) {
-	session, _ := gothic.Store.Get(request, providerName+gothic.SessionName)
-	if session != nil {
-		session.Options.MaxAge = -1
-		if err := gothic.Store.Save(request, response, session); err != nil {
-			fmt.Fprintln(os.Stderr, "Failed saving at store:", err)
-			return
-		}
-		http.Redirect(response, request, "/", 302)
+func apiHandler(response http.ResponseWriter, request *http.Request) {
+	_, err := auther.GetUser(response, request)
+	if err == nil {
+		ApiHandler(response, request)
 	} else {
-		fmt.Fprintln(os.Stderr, "Failed: session is null")
+		response.WriteHeader(http.StatusForbidden)
 	}
 }
 
-func loadOauthConfig(idFile string, secretFile string) (id string, secret string, err error) {
-	file, err := ioutil.ReadFile(idFile)
-	if err != nil {
-		return "", "", err
-	}
-	id = string(file[:len(file)-1])
+func uiHandler(response http.ResponseWriter, request *http.Request) {
+	path := "frontend/build" + strings.Replace(request.URL.Path, "/ui", "", 1)
+	_, err := os.Stat(path)
 
-	file, err = ioutil.ReadFile(secretFile)
-	if err != nil {
-		return "", "", err
+	if err == nil {
+		http.ServeFile(response, request, path)
+	} else {
+		response.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(response, "404 Not found")
 	}
-	secret = string(file[:len(file)-1])
-
-	return
 }
 
 func launchServer(patter http.Handler) {
@@ -183,24 +165,16 @@ func launchServer(patter http.Handler) {
 }
 
 func main() {
-	clientId, clientSecret, err := loadOauthConfig("oauth.client.id.hide", "oauth.client.secret.hide")
-	if err != nil {
-		log.Fatal("Failed loading oauth config files:\n", err)
-		return
-	}
-
-	provider, err := openidConnect.New(clientId, clientSecret, "https://localhost/authcallback", "https://accounts.google.com/.well-known/openid-configuration")
-	if provider != nil {
-		goth.UseProviders(provider)
-	} else {
-		log.Fatal("Failed creating provider:\n", err)
-		return
-	}
+	auther.InitProvider("localhost", "")
+	auther.RedirectSuccess = "ui"
 
 	patter := pat.New()
 	patter.Get(browse, browseHandler)
-	patter.Get("/authcallback", authCallback)
-	patter.Post("/logout", logoutHandler)
+	patter.Get("/api", apiHandler)
+	patter.Get("/ui", uiHandler)
+	patter.Get("/authcallback", auther.AuthCallback)
+	patter.Get("/login", auther.LoginHandler)
+	patter.Get("/logout", auther.LogoutHandler)
 	patter.Get("/", indexHandler)
 
 	launchServer(patter)

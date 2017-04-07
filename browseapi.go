@@ -9,7 +9,9 @@ import (
 	"net/http"
 )
 
-const home = os.Getenv("home")
+const Api = "/api"
+
+var home = os.Getenv("HOME")
 
 type directoryEntry struct {
 	Name      string
@@ -18,20 +20,20 @@ type directoryEntry struct {
 	Date      time.Time
 }
 
-func BrowseHandler(response http.ResponseWriter, request *http.Request) {
-	response.Header().Set("Content-type", "application/json")
+func ApiHandler(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Access-Control-Allow-Origin", "*")
 
 	path := request.URL.Path
 	systemPath := ""
 
-	if path == browse || path == browse+"/" {
+	if path == Api || path == Api+"/" {
 		systemPath = home
-		path = browse
+		path = Api
 	} else {
 		if path[len(path)-1] == '/' {
 			path = path[:len(path)-1]
 		}
-		systemPath = home + path[len(browse)+1:]
+		systemPath = home + "/" + path[len(Api)+1:]
 	}
 
 	// Not found
@@ -44,6 +46,7 @@ func BrowseHandler(response http.ResponseWriter, request *http.Request) {
 	{
 		files, err := ioutil.ReadDir(systemPath)
 		if err == nil {
+			response.Header().Set("Content-type", "application/json")
 			var entries []directoryEntry
 			for _, file := range files {
 				entries = append(entries, directoryEntry{

@@ -1,0 +1,12 @@
+var _user$project$Repl$t_s_o_l = {ctor: '_Tuple0'};
+var _user$project$Repl$User = F2(
+	function (a, b) {
+		return {name: a, email: b};
+	});
+var _user$project$Repl$userDecoder = A3(
+	_elm_lang$core$Json_Decode$map2,
+	_user$project$Repl$User,
+	A2(_elm_lang$core$Json_Decode$field, 'name', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode$field, 'email', _elm_lang$core$Json_Decode$string));
+var _user$project$Repl$ab = A2(_elm_lang$core$Json_Decode$decodeString, _user$project$Repl$userDecoder, '{ \"name\": \"Marcelo\", \"email\": \"yo@mama.com\" }');
+var _user$project$Repl$d_e_l_t_r_o_n_3_0_3_0 = _user$project$Repl$ab;
