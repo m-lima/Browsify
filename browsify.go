@@ -113,17 +113,15 @@ func browseHandler(response http.ResponseWriter, request *http.Request) {
 	fmt.Fprint(response, "404 Not found")
 }
 
-func apiHandler(response http.ResponseWriter, request *http.Request) {
-	_, err := auther.GetUser(response, request)
-	if err == nil {
-		ApiHandler(response, request)
-	} else {
-		response.WriteHeader(http.StatusForbidden)
-	}
-}
-
 func uiHandler(response http.ResponseWriter, request *http.Request) {
-	path := "frontend/build" + strings.Replace(request.URL.Path, "/ui", "", 1)
+	path := strings.Replace(request.URL.Path, "/ui", "", 1)
+
+	if strings.HasPrefix(path, "/static") {
+		path = "frontend/build" + path
+	} else {
+		path = "frontend/build"
+	}
+
 	_, err := os.Stat(path)
 
 	if err == nil {
@@ -166,15 +164,18 @@ func launchServer(patter http.Handler) {
 
 func main() {
 	auther.InitProvider("localhost", "")
-	auther.RedirectSuccess = "ui"
+
+	auther.PathConfig.DefaultRedirectSuccess = "ui"
+	auther.PathConfig.HostedDomain = "telenordigital.com"
+	Api = "/api"
 
 	patter := pat.New()
 	patter.Get(browse, browseHandler)
-	patter.Get("/api", apiHandler)
+	patter.Get(Api, ApiHandler)
+	patter.Get(auther.AuthCallbackPath(), auther.AuthCallback)
 	patter.Get("/ui", uiHandler)
-	patter.Get("/authcallback", auther.AuthCallback)
-	patter.Get("/login", auther.LoginHandler)
-	patter.Get("/logout", auther.LogoutHandler)
+	patter.Post("/login", auther.LoginHandler)
+	patter.Post("/logout", auther.LogoutHandler)
 	patter.Get("/", indexHandler)
 
 	launchServer(patter)

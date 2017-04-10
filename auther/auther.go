@@ -20,22 +20,28 @@ import (
 	"github.com/markbates/goth/providers/openidConnect"
 )
 
+type Paths struct {
+	HostedDomain           string
+	RedirectFailure        string
+	DefaultRedirectSuccess string
+}
+
 const (
 	providerName = "openid-connect"
 	autherStore  = "auther-store"
 )
 
 var (
+	provider     goth.Provider
 	domain       = "localhost"
 	authCallback = "/authcallback"
-	provider     goth.Provider
-	states       map[string]string
 
-	HostedDomain    = "telenordigital.com"
-	RedirectSuccess = "/"
-	RedirectFailure = "/"
-	LogStd          = log.New(os.Stdout, "auther: ", 0)
-	LogErr          = log.New(os.Stderr, "auther: ", 0)
+	PathConfig = Paths{
+		RedirectFailure:        "/",
+		DefaultRedirectSuccess: "/",
+	}
+	LogStd = log.New(os.Stdout, "auther: ", 0)
+	LogErr = log.New(os.Stderr, "auther: ", 0)
 )
 
 func init() {
@@ -100,8 +106,6 @@ func InitProvider(newDomain string, newAuthCallback string) {
 		authCallback = newAuthCallback
 	}
 
-	states = make(map[string]string)
-
 	clientID, clientSecret, err := loadOauthConfig("oauth.client.id.hide", "oauth.client.secret.hide")
 	if err != nil {
 		log.Fatal("Failed loading oauth config files:\n", err)
@@ -118,7 +122,12 @@ func InitProvider(newDomain string, newAuthCallback string) {
 }
 
 func LoginHandler(response http.ResponseWriter, request *http.Request) {
-	response.Header().Set("Access-Control-Allow-Origin", "*")
+	// TODO - REMOVE
+	if request.Host == "localhost" {
+		response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
+		response.Header().Set("Access-Control-Allow-Credentials", "true")
+	}
+
 	rawURL, err := gothic.GetAuthURL(response, request)
 	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
@@ -132,12 +141,14 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
 	}
 
 	query := url.Query()
-	query.Add("hd", HostedDomain)
+	query.Add("hd", PathConfig.HostedDomain)
 
-	session, err := getSession(request)
+	session, err := gothic.Store.Get(request, providerName+gothic.SessionName)
 	if err == nil && session != nil {
 		state := generateState()
-		states[session.Marshal()] = state
+		session.Values["state"] = state
+		session.Values["redirect"] = request.Header.Get("Referer")
+		session.Save(request, response)
 		query.Set("state", state)
 	} else {
 		LogErr.Println("Not setting state for session. Session not found.")
@@ -156,29 +167,37 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
 	http.Redirect(response, request, url.String(), http.StatusTemporaryRedirect)
 }
 
+func AuthCallbackPath() string {
+	return authCallback
+}
+
 func AuthCallback(response http.ResponseWriter, request *http.Request) {
 	url := request.URL
 
 	{
-		if hd := url.Query().Get("hd"); hd != HostedDomain {
+		if hd := url.Query().Get("hd"); hd != PathConfig.HostedDomain {
 			LogStd.Println("Hosted domain did not match. Got", hd)
 			gothic.Logout(response, request)
-			http.Redirect(response, request, RedirectFailure, http.StatusForbidden)
+			http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusForbidden)
 			return
 		}
 	}
 
+	redirectSucess := PathConfig.DefaultRedirectSuccess
+
 	{
-		session, err := getSession(request)
+		session, err := gothic.Store.Get(request, providerName+gothic.SessionName)
 		if session != nil && err == nil {
-			state := states[session.Marshal()]
+			state := session.Values["state"]
+			redirectSucess = session.Values["redirect"].(string)
+
 			queryState := url.Query().Get("state")
 			if queryState != state {
 				LogStd.Printf(`State did not match.
 Expected: %s
      Got: %s`, state, queryState)
 				gothic.Logout(response, request)
-				http.Redirect(response, request, RedirectFailure, http.StatusForbidden)
+				http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusForbidden)
 				return
 			}
 		} else {
@@ -190,11 +209,11 @@ Expected: %s
 
 	if err != nil {
 		gothic.Logout(response, request)
-		http.Redirect(response, request, RedirectFailure, http.StatusForbidden)
+		http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusForbidden)
 		return
 	}
 
-	http.Redirect(response, request, RedirectSuccess, http.StatusPermanentRedirect)
+	http.Redirect(response, request, redirectSucess, http.StatusPermanentRedirect)
 }
 
 func GetUser(response http.ResponseWriter, request *http.Request) (goth.User, error) {
@@ -210,5 +229,11 @@ func LogoutHandler(response http.ResponseWriter, request *http.Request) {
 	if err := gothic.Logout(response, request); err != nil {
 		LogErr.Println("Failed: session is null")
 	}
-	http.Redirect(response, request, RedirectSuccess, http.StatusPermanentRedirect)
+
+	redirectSuccess := request.Header.Get("Referer")
+	if redirectSuccess == "" {
+		redirectSuccess = PathConfig.DefaultRedirectSuccess
+	}
+
+	http.Redirect(response, request, redirectSuccess, http.StatusSeeOther)
 }

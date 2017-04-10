@@ -2,3 +2,5 @@
 
 web/elm-stuff/*
 
+# Vim
+*.swp

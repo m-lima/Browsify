@@ -7,10 +7,11 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/m-lima/browsify/auther"
 )
 
-const Api = "/api"
-
+var Api = "/api"
 var home = os.Getenv("HOME")
 
 type directoryEntry struct {
@@ -21,7 +22,17 @@ type directoryEntry struct {
 }
 
 func ApiHandler(response http.ResponseWriter, request *http.Request) {
-	response.Header().Set("Access-Control-Allow-Origin", "*")
+	// TODO - REMOVE
+	if request.Host == "localhost" {
+		response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
+		response.Header().Set("Access-Control-Allow-Credentials", "true")
+	}
+
+	_, err := auther.GetUser(response, request)
+	if err != nil {
+		response.WriteHeader(http.StatusForbidden)
+		return
+	}
 
 	path := request.URL.Path
 	systemPath := ""
