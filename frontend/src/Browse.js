@@ -11,22 +11,6 @@ import {
 const urlPath = 'https://localhost/api/';
 const pathPrefix = '/ui/'
 
-const StatusRenderer = (props) => (
-  <div>
-    {props.status === '403'
-      ? <div>
-          <h1>Not logged in</h1>
-          <form action='https://localhost/login' method='post'>
-            <button>Login</button>
-          </form>
-        </div>
-      : props.status === '404'
-        ? <h1>Not found</h1>
-        : <h1>Error: {props.status}</h1>
-    }
-  </div>
-)
-
 const EntryRenderer = (props) => (
   <tr>
     <td>
@@ -48,83 +32,115 @@ const EntryRenderer = (props) => (
 
 export default class BrowseList extends Component {
 
-  state = {
-    basePath: '',
-    entries: null,
-    status: 0
-  }
+  generateBreadcrumb(path) {
+    var folders = path.split('/')
+    var currentActive
 
-  fetchData(path) {
-    console.log(this.props.location)
-    this.setState({ entries: null })
-    if (path === undefined || path === '') {
-      path = this.props.location.pathname
-    }
-
-    path = path.substring(4)
-    if (path.length > 0) {
-      path += '/'
-    }
-
-    fetch(urlPath + path, { method: 'GET', credentials: 'include' })
-      .then(response => {
-        if (response.ok) {
-          response.json().then(newEntries => {
-            newEntries
-            ? this.setState({ basePath: path, entries: newEntries, status: null })
-            : this.setState({ basePath: path, entries: [], status: null })
-          })
+    for (var i = 0; i < folders.length; i++) {
+      if (folders[i]) {
+        currentActive = i
+        if (i === 0) {
+          folders[i] = [ '/'+folders[i], '/ui/'+ folders[i] ]
         } else {
-          throw new Error(response.status)
-        }})
-      .catch(err => {
-        this.setState({ basePath: path, entries: [], status: err.message})
-      })
-  }
-
-  componentDidMount() {
-    if (!this.state.entries) {
-      this.fetchData(this.props.location.pathname)
+          folders[i] = [ '/'+folders[i], folders[i-1][1] + '/' + folders[i] ]
+        }
+      }
     }
-  }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps !== this.props) {
-      this.fetchData(nextProps.location.pathname)
-    }
+    return (
+      <div>
+        <Link to={'/ui'}>Home</Link>
+        {folders.map((folder, index) => {
+          if (folder) {
+            if (index === currentActive) {
+              return(
+                <b>
+                {folder[0]}
+                </b>
+              )
+            }
+            return(
+              <Link to={folder[1]}>
+                {folder[0]}
+              </Link>
+            )
+          }
+          return ('')
+        })}
+      </div>
+    )
+
+    // return (
+    //   <Breadcrumb>
+    //     <Breadcrumb.Item href={folders[0][1]}>
+    //       Home
+    //     </Breadcrumb.Item>
+    //     {folders.map((folder, index) => {
+    //       if (folder) {
+    //         if (index === currentActive) {
+    //           return(
+    //             <Breadcrumb.Item active>
+    //               {folder[0]}
+    //             </Breadcrumb.Item>
+    //           )
+    //         }
+    //         return(
+    //           <Breadcrumb.Item href={folder[1]}>
+    //             {folder[0]}
+    //           </Breadcrumb.Item>
+    //         )
+    //       }
+    //       return ('')
+    //     })}
+    //   </Breadcrumb>
+    // )
   }
 
   render() {
-    const entries = this.state.entries
+    const entries = this.props.entries
     if (!entries) {
-      return (<h1>Loading..</h1>)
+      return (
+        <Grid>
+          <Row>
+            <Panel header={this.generateBreadcrumb(this.props.basePath)}>
+              Loading..
+            </Panel>
+          </Row>
+        </Grid>
+      )
     } else {
-      if (this.state.status) {
-        return (<StatusRenderer status={this.state.status} login={this.login} />)
+      if (this.props.status) {
+        return (
+          <Grid>
+            <Row>
+              <Panel header={this.props.status} />
+            </Row>
+          </Grid>
+        )
       } else {
         return (
           <Grid>
-          <Row>
-          <Panel header={this.state.basePath}>
-          <Table fill>
-            <thead>
-              <tr>
-                <th></th>
-                <th>Name</th>
-                <th>Size</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((entry, index) => (
-                <EntryRenderer key={index} entry={entry} base={this.state.basePath} updater={this.fetchData} caller={this}/>
-              ))}
-            </tbody>
-          </Table>
-          </Panel>
-          </Row>
+            <Row>
+              <Panel header={this.generateBreadcrumb(this.props.basePath)}>
+                <Table fill>
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Name</th>
+                      <th>Size</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {entries.map((entry, index) => (
+                      <EntryRenderer key={index} entry={entry} base={this.props.basePath} />
+                    ))}
+                  </tbody>
+                </Table>
+              </Panel>
+            </Row>
           </Grid>
-        );
+        )
       }
     }
   }

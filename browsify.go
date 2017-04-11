@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 
@@ -132,6 +133,17 @@ func uiHandler(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func userHandler(response http.ResponseWriter, request *http.Request) {
+	// TODO - REMOVE
+	if request.Host == "localhost" {
+		response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
+		response.Header().Set("Access-Control-Allow-Credentials", "true")
+	}
+
+	user, _ := auther.GetUser(response, request)
+	json.NewEncoder(response).Encode(user)
+}
+
 func launchServer(patter http.Handler) {
 	var waiter sync.WaitGroup
 	waiter.Add(2)
@@ -173,8 +185,9 @@ func main() {
 	patter.Get(browse, browseHandler)
 	patter.Get(Api, ApiHandler)
 	patter.Get(auther.AuthCallbackPath(), auther.AuthCallback)
+	patter.Get("/user", userHandler)
 	patter.Get("/ui", uiHandler)
-	patter.Post("/login", auther.LoginHandler)
+	patter.Get("/login", auther.LoginHandler)
 	patter.Post("/logout", auther.LogoutHandler)
 	patter.Get("/", indexHandler)
 

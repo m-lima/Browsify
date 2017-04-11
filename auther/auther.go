@@ -226,6 +226,11 @@ func GetUser(response http.ResponseWriter, request *http.Request) (goth.User, er
 }
 
 func LogoutHandler(response http.ResponseWriter, request *http.Request) {
+	if request.Host == "localhost" {
+		response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
+		response.Header().Set("Access-Control-Allow-Credentials", "true")
+	}
+
 	if err := gothic.Logout(response, request); err != nil {
 		LogErr.Println("Failed: session is null")
 	}

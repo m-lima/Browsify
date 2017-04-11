@@ -1,9 +1,7 @@
-html, body {
+.Landing {
   height: 100%;
-}
-
-body {
   margin: 0;
+  padding: 0;
   display: -webkit-box;
   display: -moz-box;
   display: -ms-flexbox;
@@ -14,9 +12,6 @@ body {
   text-align: center;
   background-color: #222222;
 }
- .btn-info {
-   color: #222222;
- }
 
 .Landing-logo {
   height: 350px;

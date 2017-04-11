@@ -3,30 +3,28 @@ import {
   MenuItem,
   Nav,
   Navbar,
-  NavDropdown,
-  Button
+  NavDropdown
 } from 'react-bootstrap';
 
 import logo from './img/lockHollow.svg';
-import './Title.css'
+// import './Title.css'
 
 const UserButton = (props) => (
-  <NavDropdown eventKey={1} title={props.user}>
-    <Navbar.Form>
-      <form action='https://localhost/logout' method='post'>
-        <Button className='menuitem' bsSize='xsmall' bsStyle='info' type='submit'>Logout</Button>
-      </form>
-    </Navbar.Form>
+  <NavDropdown id={'user-dropdown'} eventKey={1} title={props.user}>
+    <MenuItem eventKey={1.1} onClick={() =>
+      fetch('https://localhost/logout/', { method: 'POST', credentials: 'include' })
+        .then(window.location.reload())}>
+      Logout</MenuItem>
   </NavDropdown>
 )
 
 const ProjectList = (
-  <NavDropdown eventKey={1} title="Projects" id="basicNavDropdown">
-    <MenuItem>Overview</MenuItem>
+  <NavDropdown eventKey={1} title='Projects' id='project-dropdown'>
+    <MenuItem eventKey={1.1}>Overview</MenuItem>
     <MenuItem divider />
-    <MenuItem>Payment</MenuItem>
-    <MenuItem>OfferAPI</MenuItem>
-    <MenuItem>MobileConnect</MenuItem>
+    <MenuItem eventKey={1.1}>Payment</MenuItem>
+    <MenuItem eventKey={1.1}>OfferAPI</MenuItem>
+    <MenuItem eventKey={1.1}>MobileConnect</MenuItem>
   </NavDropdown>
 )
 
@@ -36,13 +34,15 @@ export default class Title extends Component {
     return (
       <Navbar inverse collapseOnSelect fixedTop>
         <Navbar.Header>
+          {this.props.user &&
+            <Navbar.Brand>
+              <a href='#'>
+                <img src={logo} className='Title-logo' alt='logo' style={{ height: '100%' }} />
+              </a>
+            </Navbar.Brand>
+          }
           <Navbar.Brand>
-            <a href="#">
-              <img src={logo} className="Title-logo" alt="logo" />
-            </a>
-          </Navbar.Brand>
-          <Navbar.Brand>
-            <a href="#">
+            <a href='#'>
               Securidash
             </a>
           </Navbar.Brand>
@@ -58,13 +58,9 @@ export default class Title extends Component {
                 </Nav>
               </Navbar.Collapse>
             : <Navbar.Collapse>
-                <Nav pullRight>
-                  <Navbar.Form>
-                    <form action='https://localhost/login' method='post'>
-                      <Button className='menuitem' bsStyle='info' type='submit'>Login</Button>
-                    </form>
-                  </Navbar.Form>
-                </Nav>
+                <Navbar.Text pullRight>
+                  <Navbar.Link href='https://localhost/login' style={{ textDecoration: 'none' }}>Login</Navbar.Link>
+                </Navbar.Text>
               </Navbar.Collapse>
           }
       </Navbar>
