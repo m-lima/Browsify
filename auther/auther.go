@@ -119,12 +119,6 @@ func InitProvider(domain string, authCallback string, clientID string, clientSec
 }
 
 func LoginHandler(response http.ResponseWriter, request *http.Request) {
-	// TODO - REMOVE
-	if request.Host == "localhost" {
-		response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
-		response.Header().Set("Access-Control-Allow-Credentials", "true")
-	}
-
 	rawURL, err := gothic.GetAuthURL(response, request)
 	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
@@ -219,11 +213,6 @@ func GetUser(response http.ResponseWriter, request *http.Request) (goth.User, er
 }
 
 func LogoutHandler(response http.ResponseWriter, request *http.Request) {
-	if request.Host == "localhost" {
-		response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
-		response.Header().Set("Access-Control-Allow-Credentials", "true")
-	}
-
 	if err := gothic.Logout(response, request); err != nil {
 		LogErr.Println("Failed: session is null")
 	}

@@ -22,11 +22,11 @@ type directoryEntry struct {
 }
 
 func ApiHandler(response http.ResponseWriter, request *http.Request) {
-	// TODO - REMOVE
-	if request.Host == "localhost" {
-		response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
-		response.Header().Set("Access-Control-Allow-Credentials", "true")
-	}
+	// // TODO - REMOVE
+	// if request.Host == "localhost" {
+	// 	response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
+	// 	response.Header().Set("Access-Control-Allow-Credentials", "true")
+	// }
 
 	_, err := auther.GetUser(response, request)
 	if err != nil {
@@ -80,11 +80,11 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 }
 
 func UserHandler(response http.ResponseWriter, request *http.Request) {
-	// TODO - REMOVE
-	if request.Host == "localhost" {
-		response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
-		response.Header().Set("Access-Control-Allow-Credentials", "true")
-	}
+	// // TODO - REMOVE
+	// if request.Host == "localhost" {
+	// 	response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
+	// 	response.Header().Set("Access-Control-Allow-Credentials", "true")
+	// }
 
 	user, _ := auther.GetUser(response, request)
 	json.NewEncoder(response).Encode(user)

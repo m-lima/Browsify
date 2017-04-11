@@ -78,6 +78,9 @@ func main() {
 	patter.Get(authCallback, auther.AuthCallback)
 	patter.Get("/login", auther.LoginHandler)
 	patter.Post("/logout", auther.LogoutHandler)
+	patter.Get("/", func(response http.ResponseWriter, request *http.Request) {
+		http.Redirect(response, request, "/ui", http.StatusPermanentRedirect)
+	})
 
 	launchServer(patter)
 }
