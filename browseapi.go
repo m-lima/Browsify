@@ -78,3 +78,14 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 }
+
+func UserHandler(response http.ResponseWriter, request *http.Request) {
+	// TODO - REMOVE
+	if request.Host == "localhost" {
+		response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
+		response.Header().Set("Access-Control-Allow-Credentials", "true")
+	}
+
+	user, _ := auther.GetUser(response, request)
+	json.NewEncoder(response).Encode(user)
+}

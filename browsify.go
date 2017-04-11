@@ -7,120 +7,21 @@ import (
 	"strings"
 	"sync"
 
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/gorilla/pat"
 	"github.com/m-lima/browsify/auther"
 )
 
-const browse = "/browse"
-
-const pageHeader = `
-<html>
-	<head>
-		<title>Browsify</title>
-	</head>
-	<body>
-`
-
-const linkString = `
-		<a href="%s">%s</a>
-		<br>
-`
-
-func indexHandler(response http.ResponseWriter, request *http.Request) {
-	user, err := auther.GetUser(response, request)
-	if err == nil {
-		fmt.Fprintf(response, "Logged in as "+user.Name)
-	} else {
-		fmt.Fprintf(response, "Nope")
-	}
-
-	// http.Redirect(response, request, browse, 302)
-
-	// if _, err := gothic.CompleteUserAuth(response, request); err == nil {
-	// 	http.Redirect(response, request, browse, 302)
-	// 	return
-	// }
-
-	// http.ServeFile(response, request, "main.html")
-}
-
-func browseHandler(response http.ResponseWriter, request *http.Request) {
-	// if _, err := gothic.CompleteUserAuth(response, request); err != nil {
-	// 	gothic.BeginAuthHandler(response, request)
-	// 	return
-	// }
-
-	// if true {
-	// 	BrowseHandler(response, request)
-	// 	return
-	// }
-
-	path := request.URL.Path
-	var systemPath string
-
-	if path == browse || path == browse+"/" {
-		systemPath = home
-		path = browse
-	} else {
-		if path[len(path)-1] == '/' {
-			path = path[:len(path)-1]
-		}
-		systemPath = home + "/" + path[len(browse)+1:]
-	}
-
-	fmt.Println(systemPath)
-
-	// Try folder
-	{
-		files, err := ioutil.ReadDir(systemPath)
-		if err == nil {
-			fmt.Fprint(response, pageHeader)
-			fmt.Fprint(response, `
-	<form method="post" action="/logout">
-		<button type="submit">Logout</button>
-	</form>
-	`)
-
-			if systemPath != home {
-				upDir := path[:strings.LastIndex(path, "/")]
-				fmt.Fprintf(response, linkString, upDir, "..")
-			}
-
-			for _, file := range files {
-				fmt.Fprintf(response, linkString, path+"/"+file.Name(), file.Name())
-			}
-
-			fmt.Fprintln(response, "</html>")
-			return
-		}
-	}
-
-	// Try file
-	{
-		_, err := os.Stat(systemPath)
-
-		if err == nil {
-			http.ServeFile(response, request, systemPath)
-			return
-		}
-	}
-
-	// Not found
-	response.WriteHeader(http.StatusNotFound)
-	fmt.Fprint(response, "404 Not found")
-}
+const authCallback = "/authcallback"
 
 func uiHandler(response http.ResponseWriter, request *http.Request) {
 	path := strings.Replace(request.URL.Path, "/ui", "", 1)
 
 	if strings.HasPrefix(path, "/static") {
-		path = "frontend/build" + path
+		path = "ui/build" + path
 	} else {
-		path = "frontend/build"
+		path = "ui/build"
 	}
 
 	_, err := os.Stat(path)
@@ -131,17 +32,6 @@ func uiHandler(response http.ResponseWriter, request *http.Request) {
 		response.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(response, "404 Not found")
 	}
-}
-
-func userHandler(response http.ResponseWriter, request *http.Request) {
-	// TODO - REMOVE
-	if request.Host == "localhost" {
-		response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
-		response.Header().Set("Access-Control-Allow-Credentials", "true")
-	}
-
-	user, _ := auther.GetUser(response, request)
-	json.NewEncoder(response).Encode(user)
 }
 
 func launchServer(patter http.Handler) {
@@ -175,21 +65,19 @@ func launchServer(patter http.Handler) {
 }
 
 func main() {
-	auther.InitProvider("localhost", "")
+	auther.InitProvider("localhost", authCallback, "oauth.client.id.hide", "oauth.client.secret.hide")
 
 	auther.PathConfig.DefaultRedirectSuccess = "ui"
 	auther.PathConfig.HostedDomain = "telenordigital.com"
 	Api = "/api"
 
 	patter := pat.New()
-	patter.Get(browse, browseHandler)
 	patter.Get(Api, ApiHandler)
-	patter.Get(auther.AuthCallbackPath(), auther.AuthCallback)
-	patter.Get("/user", userHandler)
+	patter.Get("/user", UserHandler)
 	patter.Get("/ui", uiHandler)
+	patter.Get(authCallback, auther.AuthCallback)
 	patter.Get("/login", auther.LoginHandler)
 	patter.Post("/logout", auther.LogoutHandler)
-	patter.Get("/", indexHandler)
 
 	launchServer(patter)
 }

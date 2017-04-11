@@ -32,9 +32,7 @@ const (
 )
 
 var (
-	provider     goth.Provider
-	domain       = "localhost"
-	authCallback = "/authcallback"
+	provider goth.Provider
 
 	PathConfig = Paths{
 		RedirectFailure:        "/",
@@ -98,26 +96,25 @@ func getSession(request *http.Request) (goth.Session, error) {
 	return provider.UnmarshalSession(value.(string))
 }
 
-func InitProvider(newDomain string, newAuthCallback string) {
-	if newDomain != "" {
-		domain = newDomain
-	}
-	if newAuthCallback != "" {
-		authCallback = newAuthCallback
+func InitProvider(domain string, authCallback string, clientID string, clientSecret string) error {
+	if domain == "" || authCallback == "" || clientID == "" || clientSecret == "" {
+		log.Fatal("Arguments cannot be empty")
+		return errors.New("could not initialize authentication provider")
 	}
 
-	clientID, clientSecret, err := loadOauthConfig("oauth.client.id.hide", "oauth.client.secret.hide")
+	clientID, clientSecret, err := loadOauthConfig(clientID, clientSecret)
 	if err != nil {
 		log.Fatal("Failed loading oauth config files:\n", err)
-		return
+		return err
 	}
 
 	provider, err = openidConnect.New(clientID, clientSecret, "https://"+domain+authCallback, "https://accounts.google.com/.well-known/openid-configuration", "email")
 	if provider != nil {
 		goth.UseProviders(provider)
+		return nil
 	} else {
 		log.Fatal("Failed creating provider:\n", err)
-		return
+		return err
 	}
 }
 
@@ -165,10 +162,6 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
 	url.RawQuery = query.Encode()
 
 	http.Redirect(response, request, url.String(), http.StatusTemporaryRedirect)
-}
-
-func AuthCallbackPath() string {
-	return authCallback
 }
 
 func AuthCallback(response http.ResponseWriter, request *http.Request) {
