@@ -5,7 +5,8 @@ import {
 } from 'react-router-dom';
 
 import Title from './Title.js'
-import EntryList from './Browse.js'
+import BrowseList from './Browse.js'
+import Landing from './Landing.js'
 import './App.css';
 
 class App extends Component {
@@ -16,12 +17,12 @@ class App extends Component {
         <div>
           <Title />
           <div className='App-container'>
-            <Route path="/" component={EntryList} />
+            <Route path="/" component={BrowseList} />
           </div>
         </div>
       </Router>
-    );
+    )
   }
 }
 
-export default App;
+export default App

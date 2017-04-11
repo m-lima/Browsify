@@ -3,15 +3,20 @@ import {
   MenuItem,
   Nav,
   Navbar,
-  NavDropdown
+  NavDropdown,
+  Button
 } from 'react-bootstrap';
 
 import logo from './img/lockHollow.svg';
 import './Title.css'
 
 const UserButton = (props) => (
-  <NavDropdown eventKey={1} title={props.user} id="basicNavDropdown">
-    <MenuItem>Logout</MenuItem>
+  <NavDropdown eventKey={1} title={props.user}>
+    <Navbar.Form>
+      <form action='https://localhost/logout' method='post'>
+        <Button className='menuitem' bsSize='xsmall' bsStyle='info' type='submit'>Logout</Button>
+      </form>
+    </Navbar.Form>
   </NavDropdown>
 )
 
@@ -23,13 +28,9 @@ const ProjectList = (
     <MenuItem>OfferAPI</MenuItem>
     <MenuItem>MobileConnect</MenuItem>
   </NavDropdown>
-);
+)
 
 export default class Title extends Component {
-
-  state = {
-    user: 'marcelo@telenordigital.com'
-  }
 
   render() {
     return (
@@ -47,14 +48,25 @@ export default class Title extends Component {
           </Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>
-        <Navbar.Collapse>
-          <Nav pullLeft>
-            {ProjectList}
-          </Nav>
-          <Nav pullRight>
-            <UserButton user={this.state.user}/>
-          </Nav>
-        </Navbar.Collapse>
+          {this.props.user
+            ? <Navbar.Collapse>
+                <Nav pullLeft>
+                  {ProjectList}
+                </Nav>
+                <Nav pullRight>
+                  <UserButton user={this.props.user}/>
+                </Nav>
+              </Navbar.Collapse>
+            : <Navbar.Collapse>
+                <Nav pullRight>
+                  <Navbar.Form>
+                    <form action='https://localhost/login' method='post'>
+                      <Button className='menuitem' bsStyle='info' type='submit'>Login</Button>
+                    </form>
+                  </Navbar.Form>
+                </Nav>
+              </Navbar.Collapse>
+          }
       </Navbar>
     )
   }

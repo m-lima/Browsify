@@ -46,7 +46,7 @@ const EntryRenderer = (props) => (
   </tr>
 )
 
-export default class EntryList extends Component {
+export default class BrowseList extends Component {
 
   state = {
     basePath: '',
@@ -55,6 +55,7 @@ export default class EntryList extends Component {
   }
 
   fetchData(path) {
+    console.log(this.props.location)
     this.setState({ entries: null })
     if (path === undefined || path === '') {
       path = this.props.location.pathname

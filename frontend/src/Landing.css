@@ -12,34 +12,13 @@ body {
   justify-content: center;
   align-items: center;
   text-align: center;
+  background-color: #222222;
 }
-
-.Landing {
-  /* height: 100%; */
-  /* padding: 0; */
-  /* margin: 0; */
-}
+ .btn-info {
+   color: #222222;
+ }
 
 .Landing-logo {
   height: 350px;
-}
-
-.Landing-intro {
-  color: white;
-  font-size: large;
-}
-
-.Landing-bundle {
-  z-index: 10;
-}
-
-.Landing-stripe {
-  height: 250px;
-  width: 100%;
-  background: black;
-  position: absolute;
-  left: 0;
-  top: -100px;
-  z-index: 11;
 }
 
