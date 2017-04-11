@@ -11,8 +11,11 @@ import (
 	"github.com/m-lima/browsify/auther"
 )
 
-var Api = "/api"
-var home = os.Getenv("HOME")
+var (
+	Api  = "/api"
+	User = "/user"
+	Home = os.Getenv("HOME")
+)
 
 type directoryEntry struct {
 	Name      string
@@ -38,13 +41,13 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 	systemPath := ""
 
 	if path == Api || path == Api+"/" {
-		systemPath = home
+		systemPath = Home
 		path = Api
 	} else {
 		if path[len(path)-1] == '/' {
 			path = path[:len(path)-1]
 		}
-		systemPath = home + "/" + path[len(Api)+1:]
+		systemPath = Home + "/" + path[len(Api)+1:]
 	}
 
 	// Not found
