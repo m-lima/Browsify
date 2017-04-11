@@ -7,10 +7,7 @@ import {
 import Title from './Title.js'
 import BrowseList from './Browse.js'
 import Landing from './Landing.js'
-
-// Update for apiPrefix (remove host)
-const urlPath = 'https://localhost/api/';
-const userPath = 'https://localhost/user/';
+import * as Constants from './Constants.js'
 
 class StatefulRenderer extends Component {
 
@@ -23,7 +20,7 @@ class StatefulRenderer extends Component {
 
   checkUser() {
     if (!this.state.user) {
-      fetch(userPath, { method: 'GET', credentials: 'include' })
+      fetch(Constants.user, { method: 'GET', credentials: 'include' })
         .then(response => {
           if (response.ok) {
             response.json().then( newUser => {
@@ -44,13 +41,13 @@ class StatefulRenderer extends Component {
     }
 
     path = path.substring(4)
-    if (path.length > 0) {
+    if (path.length > 0 && path.charAt(path.length - 1) !== '/') {
       path += '/'
     }
 
     this.setState({ basePath: path, entries: null })
 
-    fetch(urlPath + path, { method: 'GET', credentials: 'include' })
+    fetch(Constants.api + path, { method: 'GET', credentials: 'include' })
       .then(response => {
         if (response.ok) {
           response.json().then(newEntries => {

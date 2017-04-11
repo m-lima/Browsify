@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import {
   MenuItem,
   Nav,
@@ -6,13 +7,13 @@ import {
   NavDropdown
 } from 'react-bootstrap';
 
+import * as Constants from './Constants.js'
 import logo from './img/lockHollow.svg';
-// import './Title.css'
 
 const UserButton = (props) => (
   <NavDropdown id={'user-dropdown'} eventKey={1} title={props.user}>
     <MenuItem eventKey={1.1} onClick={() =>
-      fetch('https://localhost/logout/', { method: 'POST', credentials: 'include' })
+      fetch(Constants.logout, { method: 'POST', credentials: 'include' })
         .then(window.location.reload())}>
       Logout</MenuItem>
   </NavDropdown>
@@ -36,15 +37,15 @@ export default class Title extends Component {
         <Navbar.Header>
           {this.props.user &&
             <Navbar.Brand>
-              <a href='#'>
+              <Link to={Constants.ui}>
                 <img src={logo} className='Title-logo' alt='logo' style={{ height: '100%' }} />
-              </a>
+              </Link>
             </Navbar.Brand>
           }
           <Navbar.Brand>
-            <a href='#'>
+            <Link to={Constants.ui}>
               Securidash
-            </a>
+            </Link>
           </Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>
@@ -59,7 +60,7 @@ export default class Title extends Component {
               </Navbar.Collapse>
             : <Navbar.Collapse>
                 <Navbar.Text pullRight>
-                  <Navbar.Link href='https://localhost/login' style={{ textDecoration: 'none' }}>Login</Navbar.Link>
+                  <Navbar.Link href={Constants.login} style={{ textDecoration: 'none' }}>Login</Navbar.Link>
                 </Navbar.Text>
               </Navbar.Collapse>
           }

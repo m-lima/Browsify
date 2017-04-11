@@ -1,0 +1,5 @@
+export const ui = '/ui/'
+export const user = '/user/'
+export const api = '/api/'
+export const login = '/login/'
+export const logout = '/logout/'

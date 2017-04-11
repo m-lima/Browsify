@@ -7,9 +7,7 @@ import {
   Row
 } from 'react-bootstrap';
 
-// Update for apiPrefix (remove host)
-const urlPath = 'https://localhost/api/';
-const pathPrefix = '/ui/'
+import * as Constants from './Constants.js'
 
 const EntryRenderer = (props) => (
   <tr>
@@ -21,8 +19,8 @@ const EntryRenderer = (props) => (
     </td>
     <td>
       {props.entry.Directory
-        ? <Link to={pathPrefix + props.base + props.entry.Name}>{props.entry.Name}</Link>
-        : <a href={urlPath + props.base + props.entry.Name}>{props.entry.Name}</a>
+        ? <Link to={Constants.ui + props.base + props.entry.Name}>{props.entry.Name}</Link>
+        : <a href={Constants.api + props.base + props.entry.Name}>{props.entry.Name}</a>
       }
     </td>
     <td>{props.entry.Size}</td>
@@ -76,7 +74,7 @@ export default class BrowseList extends Component {
       if (folders[i]) {
         currentActive = i
         if (i === 0) {
-          folders[i] = [ '/'+folders[i], '/ui/'+ folders[i] ]
+          folders[i] = [ '/'+folders[i], Constants.ui + folders[i] ]
         } else {
           folders[i] = [ '/'+folders[i], folders[i-1][1] + '/' + folders[i] ]
         }
@@ -85,7 +83,7 @@ export default class BrowseList extends Component {
 
     return (
       <span>
-        <Link to={'/ui'}>Home</Link>
+        <Link to={Constants.ui}>Home</Link>
         {folders.map((folder, index) => {
           if (folder) {
             if (index === currentActive) {
