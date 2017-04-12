@@ -31,13 +31,11 @@ var (
 )
 
 func uiHandler(response http.ResponseWriter, request *http.Request) {
-	path := strings.Replace(request.URL.Path, ui, "", 1)
+	http.ServeFile(response, request, uiPath+"/index.html")
+}
 
-	if strings.HasPrefix(path, staticPath) {
-		path = uiPath + path
-	} else {
-		path = uiPath
-	}
+func staticHandler(response http.ResponseWriter, request *http.Request) {
+	path := uiPath + strings.Replace(request.URL.Path, ui, "", 1)
 
 	_, err := os.Stat(path)
 
@@ -109,6 +107,7 @@ func main() {
 	patter := pat.New()
 	patter.Get(Api, ApiHandler)
 	patter.Get(User, UserHandler)
+	patter.Get(ui+staticPath, staticHandler)
 	patter.Get(ui, uiHandler)
 	patter.Get(authCallback, auther.AuthCallback)
 	patter.Get("/login", auther.LoginHandler)
