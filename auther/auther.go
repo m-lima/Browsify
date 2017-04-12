@@ -165,7 +165,7 @@ func AuthCallback(response http.ResponseWriter, request *http.Request) {
 		if hd := url.Query().Get("hd"); hd != PathConfig.HostedDomain {
 			LogStd.Println("Hosted domain did not match. Got", hd)
 			gothic.Logout(response, request)
-			http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusForbidden)
+			http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusUnauthorized)
 			return
 		}
 	}
@@ -184,7 +184,7 @@ func AuthCallback(response http.ResponseWriter, request *http.Request) {
 Expected: %s
      Got: %s`, state, queryState)
 				gothic.Logout(response, request)
-				http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusForbidden)
+				http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusUnauthorized)
 				return
 			}
 		} else {
@@ -196,7 +196,7 @@ Expected: %s
 
 	if err != nil {
 		gothic.Logout(response, request)
-		http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusForbidden)
+		http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusUnauthorized)
 		return
 	}
 

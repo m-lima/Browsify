@@ -27,7 +27,6 @@ var (
 	serverCert   = "server.crt.hide"
 	serverKey    = "server.key.hide"
 	hostedDomain = ""
-	home         = ""
 	ui           = "/ui"
 )
 
@@ -88,8 +87,10 @@ func handleFlags() {
 	flag.StringVar(&serverCert, "sc", serverCert, "file path for the server certificate file")
 	flag.StringVar(&serverKey, "sk", serverKey, "file path for the server key file")
 	flag.StringVar(&hostedDomain, "hd", hostedDomain, "authorized domains for OpenID authentication")
-	flag.StringVar(&home, "home", home, "base path for browsing")
 	flag.StringVar(&ui, "ui", ui, "URL path for main UI")
+	flag.StringVar(&Home, "home", Home, "base path for browsing")
+	flag.BoolVar(&ShowHidden, "sh", ShowHidden, "show hidden files")
+	flag.BoolVar(&ShowProtected, "sp", ShowProtected, "show hidden files")
 
 	flag.Parse()
 }
@@ -104,9 +105,6 @@ func main() {
 
 	auther.PathConfig.DefaultRedirectSuccess = ui
 	auther.PathConfig.HostedDomain = hostedDomain
-	if home != "" {
-		Home = home
-	}
 
 	patter := pat.New()
 	patter.Get(Api, ApiHandler)

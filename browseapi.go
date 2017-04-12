@@ -12,9 +12,11 @@ import (
 )
 
 var (
-	Api  = "/api"
-	User = "/user"
-	Home = os.Getenv("HOME")
+	Api           = "/api"
+	User          = "/user"
+	Home          = os.Getenv("HOME")
+	ShowHidden    = false
+	ShowProtected = false
 )
 
 type directoryEntry struct {
@@ -24,16 +26,19 @@ type directoryEntry struct {
 	Date      time.Time
 }
 
-func ApiHandler(response http.ResponseWriter, request *http.Request) {
-	// // TODO - REMOVE
-	// if request.Host == "localhost" {
-	// 	response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
-	// 	response.Header().Set("Access-Control-Allow-Credentials", "true")
-	// }
+func shouldDisplayFile(file os.FileInfo) bool {
+	if ShowProtected || file.Mode()&0004 != 0 {
+		if ShowHidden || file.Name()[0] != '.' {
+			return true
+		}
+	}
+	return false
+}
 
+func ApiHandler(response http.ResponseWriter, request *http.Request) {
 	_, err := auther.GetUser(response, request)
 	if err != nil {
-		response.WriteHeader(http.StatusForbidden)
+		response.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -56,6 +61,12 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// Should not display
+	if file, err := os.Stat(systemPath); err != nil || !shouldDisplayFile(file) {
+		response.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	// Try folder
 	{
 		files, err := ioutil.ReadDir(systemPath)
@@ -63,12 +74,14 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 			response.Header().Set("Content-type", "application/json")
 			var entries []directoryEntry
 			for _, file := range files {
-				entries = append(entries, directoryEntry{
-					Name:      file.Name(),
-					Directory: file.IsDir(),
-					Size:      file.Size(),
-					Date:      file.ModTime(),
-				})
+				if shouldDisplayFile(file) {
+					entries = append(entries, directoryEntry{
+						Name:      file.Name(),
+						Directory: file.IsDir(),
+						Size:      file.Size(),
+						Date:      file.ModTime(),
+					})
+				}
 			}
 			json.NewEncoder(response).Encode(entries)
 			return
@@ -83,12 +96,6 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 }
 
 func UserHandler(response http.ResponseWriter, request *http.Request) {
-	// // TODO - REMOVE
-	// if request.Host == "localhost" {
-	// 	response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
-	// 	response.Header().Set("Access-Control-Allow-Credentials", "true")
-	// }
-
 	user, _ := auther.GetUser(response, request)
 	json.NewEncoder(response).Encode(user)
 }
