@@ -16,7 +16,7 @@ import (
 
 const (
 	staticPath = "/static"
-	uiPath     = "ui/build"
+	uiPath     = "web/build"
 )
 
 var (
