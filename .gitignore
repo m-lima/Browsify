@@ -5,4 +5,4 @@ web/elm-stuff/*
 # Vim
 *.swp
 
-./browsify
+browsify
