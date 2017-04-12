@@ -26,10 +26,10 @@ class StatefulRenderer extends Component {
             response.json().then( newUser => {
               newUser
               ? this.setState({ user: newUser })
-              : this.setState({ entries: [], user: null, status: '403' })
+              : this.setState({ entries: [], user: null, status: Constants.statusUnauthorized })
             })
           } else {
-            throw new Error('403')
+            throw new Error(Constants.statusUnauthorized )
           }
         })
     }
@@ -61,7 +61,7 @@ class StatefulRenderer extends Component {
       .then(this.checkUser())
       .catch(err => {
         var newUser = this.state.user
-        if (newUser && err.message === '403') {
+        if (newUser && err.message === Constants.statusUnauthorized) {
           newUser = null
         }
 
@@ -82,7 +82,7 @@ class StatefulRenderer extends Component {
   }
 
   render() {
-    if (this.state.status === '403') {
+    if (this.state.status === Constants.statusUnauthorized) {
       return (
         <div style={{ height: '100%'}} >
           <Title />
