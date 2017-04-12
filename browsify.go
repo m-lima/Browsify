@@ -105,6 +105,11 @@ func main() {
 	auther.PathConfig.HostedDomain = hostedDomain
 
 	patter := pat.New()
+
+	patter.Get("/favicon.ico", func(response http.ResponseWriter, request *http.Request) {
+		http.ServeFile(response, request, uiPath+"/favicon.ico")
+	})
+
 	patter.Get(Api, ApiHandler)
 	patter.Get(User, UserHandler)
 	patter.Get(ui+staticPath, staticHandler)
@@ -112,6 +117,7 @@ func main() {
 	patter.Get(authCallback, auther.AuthCallback)
 	patter.Get("/login", auther.LoginHandler)
 	patter.Post("/logout", auther.LogoutHandler)
+
 	patter.Get("/", func(response http.ResponseWriter, request *http.Request) {
 		http.Redirect(response, request, ui, http.StatusPermanentRedirect)
 	})
