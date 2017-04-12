@@ -162,7 +162,7 @@ func AuthCallback(response http.ResponseWriter, request *http.Request) {
 	url := request.URL
 
 	{
-		if hd := url.Query().Get("hd"); hd != PathConfig.HostedDomain {
+		if hd := url.Query().Get("hd"); PathConfig.HostedDomain != "" && hd != PathConfig.HostedDomain {
 			LogStd.Println("Hosted domain did not match. Got", hd)
 			gothic.Logout(response, request)
 			http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusUnauthorized)
