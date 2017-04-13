@@ -13,7 +13,7 @@ import (
 
 const (
 	Api  = "/api/"
-	User = "/user/"
+	User = "/user"
 )
 
 var (
@@ -99,6 +99,10 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 }
 
 func UserHandler(response http.ResponseWriter, request *http.Request) {
-	user, _ := auther.GetUser(response, request)
-	json.NewEncoder(response).Encode(user)
+	user, err := auther.GetUser(response, request)
+	if err == nil && user.Email != "" {
+		response.Write([]byte(user.Email))
+	} else {
+		response.WriteHeader(http.StatusUnauthorized)
+	}
 }

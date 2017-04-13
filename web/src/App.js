@@ -23,9 +23,10 @@ class StatefulRenderer extends Component {
       fetch(Constants.user, { method: 'GET', credentials: 'include' })
         .then(response => {
           if (response.ok) {
-            response.json().then( newUser => {
-              newUser && this.setState({ user: newUser })
-            })
+            response.text()
+              .then(newUser => this.setState({ user: newUser }))
+          } else {
+            console.log('Error fetching user')
           }
         })
     }
@@ -90,7 +91,7 @@ class StatefulRenderer extends Component {
     } else {
       return (
         <div style={{ marginTop: 80 }} >
-          <Title user={this.state.user ? this.state.user.Email : 'Loading..'} />
+          <Title user={this.state.user ? this.state.user : 'Loading..'} />
           <BrowseList basePath={this.state.basePath} entries={this.state.entries} status={this.state.status} />
         </div>
       )

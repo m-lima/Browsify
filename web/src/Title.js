@@ -38,7 +38,7 @@ export default class Title extends Component {
           {this.props.user &&
             <Navbar.Brand>
               <Link to={Constants.ui}>
-                <img src={logo} className='Title-logo' alt='logo' style={{ height: '100%' }} />
+                <img src={logo} className='Title-logo' alt='logo' style={{ height: '20px' }} />
               </Link>
             </Navbar.Brand>
           }
