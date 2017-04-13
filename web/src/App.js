@@ -24,15 +24,31 @@ class StatefulRenderer extends Component {
         .then(response => {
           if (response.ok) {
             response.json().then( newUser => {
-              newUser
-              ? this.setState({ user: newUser })
-              : this.setState({ entries: [], user: null, status: Constants.statusUnauthorized })
+              newUser && this.setState({ user: newUser })
             })
-          } else {
-            throw new Error(Constants.statusUnauthorized )
           }
         })
     }
+  }
+
+  fetchFiles(path) {
+    fetch(Constants.api + path, { method: 'GET', credentials: 'include' })
+      .then(response => {
+        if (response.ok) {
+          response.json().then(newEntries => {
+            newEntries
+            ? this.setState({ entries: newEntries, status: null })
+            : this.setState({ entries: [], status: null })
+          })
+          .catch(err => {
+            this.setState({ entries: [], status: err.message })
+          })
+        } else {
+          this.setState({ entries: [], status: response.status })
+        }})
+      .catch(err => {
+        this.setState({ entries: [], status: err.message })
+      })
   }
 
   fetchData(path) {
@@ -46,28 +62,10 @@ class StatefulRenderer extends Component {
     }
 
     this.setState({ basePath: path, entries: null })
-
-    fetch(Constants.api + path, { method: 'GET', credentials: 'include' })
-      .then(response => {
-        if (response.ok) {
-          response.json().then(newEntries => {
-            newEntries
-            ? this.setState({ basePath: path, entries: newEntries, status: null })
-            : this.setState({ basePath: path, entries: [], status: null })
-          })
-        } else {
-          throw new Error(response.status)
-        }})
-      .then(this.checkUser())
-      .catch(err => {
-        var newUser = this.state.user
-        if (newUser && err.message === Constants.statusUnauthorized) {
-          newUser = null
-        }
-
-        this.setState({ basePath: path, entries: [], status: err.message, user: newUser })
-      })
+    this.fetchFiles(path)
+    this.checkUser()
   }
+
 
   componentDidMount() {
     if (!this.state.entries) {
