@@ -11,9 +11,12 @@ import (
 	"github.com/m-lima/browsify/auther"
 )
 
+const (
+	Api  = "/api/"
+	User = "/user/"
+)
+
 var (
-	Api           = "/api"
-	User          = "/user"
 	Home          = os.Getenv("HOME")
 	ShowHidden    = false
 	ShowProtected = false
@@ -45,14 +48,14 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 	path := request.URL.Path
 	systemPath := ""
 
-	if path == Api || path == Api+"/" {
+	if path == Api || path == Api[:len(Api)-1] {
 		systemPath = Home
 		path = Api
 	} else {
 		if path[len(path)-1] == '/' {
 			path = path[:len(path)-1]
 		}
-		systemPath = Home + "/" + path[len(Api)+1:]
+		systemPath = Home + "/" + path[len(Api):]
 	}
 
 	// Not found

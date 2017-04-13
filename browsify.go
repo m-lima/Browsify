@@ -2,52 +2,39 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
-	"os"
-	"strings"
 	"sync"
 
 	"net/http"
 
-	"github.com/gorilla/pat"
 	"github.com/m-lima/browsify/auther"
 )
 
 const (
-	staticPath = "/static"
+	staticPath = "static/"
 	uiPath     = "web/build"
+
+	authCallback = "/authcallback"
+	login        = "/login/"
+	logout       = "/logout/"
 )
 
 var (
-	authCallback = "/authcallback"
 	host         = "localhost"
 	clientID     = "oauth.client.id.hide"
 	clientSecret = "oauth.client.secret.hide"
 	serverCert   = "server.crt.hide"
 	serverKey    = "server.key.hide"
 	hostedDomain = ""
-	ui           = "/ui"
+	ui           = "/ui/"
 )
 
-func uiHandler(response http.ResponseWriter, request *http.Request) {
-	http.ServeFile(response, request, uiPath+"/index.html")
-}
-
 func staticHandler(response http.ResponseWriter, request *http.Request) {
-	path := uiPath + strings.Replace(request.URL.Path, ui, "", 1)
-
-	_, err := os.Stat(path)
-
-	if err == nil {
-		http.ServeFile(response, request, path)
-	} else {
-		response.WriteHeader(http.StatusNotFound)
-		fmt.Fprint(response, "404 Not found")
-	}
+	path := uiPath + request.URL.Path[3:]
+	http.ServeFile(response, request, path)
 }
 
-func launchServer(patter http.Handler) {
+func launchServer(mux *http.ServeMux) {
 	var waiter sync.WaitGroup
 	waiter.Add(2)
 
@@ -67,7 +54,7 @@ func launchServer(patter http.Handler) {
 	{
 		go func() {
 			defer waiter.Done()
-			err := http.ListenAndServeTLS("", serverCert, serverKey, patter)
+			err := http.ListenAndServeTLS("", serverCert, serverKey, mux)
 			if err != nil {
 				log.Fatal("Could not start HTTPS server:\n", err)
 			}
@@ -78,7 +65,6 @@ func launchServer(patter http.Handler) {
 }
 
 func handleFlags() {
-	flag.StringVar(&authCallback, "auth", authCallback, "callback path for authentication")
 	flag.StringVar(&host, "host", host, "the host for this server")
 	flag.StringVar(&clientID, "cid", clientID, "file path for the client ID file")
 	flag.StringVar(&clientSecret, "cs", clientSecret, "file path for the client secret file")
@@ -91,6 +77,18 @@ func handleFlags() {
 	flag.BoolVar(&ShowProtected, "sp", ShowProtected, "show hidden files")
 
 	flag.Parse()
+
+	if ui[0] != '/' {
+		ui = "/" + ui
+	}
+
+	if ui[len(ui)-1] != '/' {
+		ui += "/"
+	}
+
+	if Home[len(ui)-1] == '/' {
+		Home = Home[:len(Home)-1]
+	}
 }
 
 func main() {
@@ -104,23 +102,28 @@ func main() {
 	auther.PathConfig.DefaultRedirectSuccess = ui
 	auther.PathConfig.HostedDomain = hostedDomain
 
-	patter := pat.New()
+	mux := http.NewServeMux()
 
-	patter.Get("/favicon.ico", func(response http.ResponseWriter, request *http.Request) {
+	// Main redirect
+	mux.Handle("/", http.RedirectHandler(ui, http.StatusPermanentRedirect))
+
+	// Web UI routes
+	mux.HandleFunc("/favicon.ico", func(response http.ResponseWriter, request *http.Request) {
 		http.ServeFile(response, request, uiPath+"/favicon.ico")
 	})
-
-	patter.Get(Api, ApiHandler)
-	patter.Get(User, UserHandler)
-	patter.Get(ui+staticPath, staticHandler)
-	patter.Get(ui, uiHandler)
-	patter.Get(authCallback, auther.AuthCallback)
-	patter.Get("/login", auther.LoginHandler)
-	patter.Post("/logout", auther.LogoutHandler)
-
-	patter.Get("/", func(response http.ResponseWriter, request *http.Request) {
-		http.Redirect(response, request, ui, http.StatusPermanentRedirect)
+	mux.HandleFunc(ui, func(response http.ResponseWriter, request *http.Request) {
+		http.ServeFile(response, request, uiPath+"/index.html")
 	})
+	mux.HandleFunc(ui+staticPath, staticHandler)
 
-	launchServer(patter)
+	// Api routes
+	mux.HandleFunc(Api, ApiHandler)
+	mux.HandleFunc(User, UserHandler)
+
+	// Auth routes
+	mux.HandleFunc(authCallback, auther.AuthCallback)
+	mux.HandleFunc(login, auther.LoginHandler)
+	mux.HandleFunc(logout, auther.LogoutHandler)
+
+	launchServer(mux)
 }
