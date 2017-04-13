@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 	"sync"
 
 	"net/http"
@@ -11,12 +12,12 @@ import (
 )
 
 const (
-	staticPath = "static/"
+	staticPath = "/static/"
 	uiPath     = "web/build"
 
 	authCallback = "/authcallback"
-	login        = "/login/"
-	logout       = "/logout/"
+	login        = "/login"
+	logout       = "/logout"
 )
 
 var (
@@ -30,8 +31,13 @@ var (
 )
 
 func staticHandler(response http.ResponseWriter, request *http.Request) {
-	path := uiPath + request.URL.Path[3:]
-	http.ServeFile(response, request, path)
+	path := uiPath + request.URL.Path
+	file, _ := os.Stat(path)
+	if file != nil && !file.IsDir() {
+		http.ServeFile(response, request, path)
+	} else {
+		response.WriteHeader(http.StatusNotFound)
+	}
 }
 
 func launchServer(mux *http.ServeMux) {
@@ -114,7 +120,7 @@ func main() {
 	mux.HandleFunc(ui, func(response http.ResponseWriter, request *http.Request) {
 		http.ServeFile(response, request, uiPath+"/index.html")
 	})
-	mux.HandleFunc(ui+staticPath, staticHandler)
+	mux.HandleFunc(staticPath, staticHandler)
 
 	// Api routes
 	mux.HandleFunc(Api, ApiHandler)

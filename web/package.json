@@ -2,7 +2,7 @@
   "name": "browsifyjs",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/ui",
+  "homepage": "/",
   "dependencies": {
     "react": "^15.4.2",
     "react-bootstrap": "^0.30.8",
