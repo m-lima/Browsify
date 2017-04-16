@@ -38,8 +38,11 @@ var (
 		RedirectFailure:        "/",
 		DefaultRedirectSuccess: "/",
 	}
+
 	LogStd = log.New(os.Stdout, "auther: ", 0)
 	LogErr = log.New(os.Stderr, "auther: ", 0)
+
+	UserHandler = func(*goth.User) bool { return true }
 )
 
 func init() {
@@ -142,12 +145,11 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
 		session.Save(request, response)
 		query.Set("state", state)
 	} else {
-		LogErr.Println("Not setting state for session. Session not found.")
 		if session == nil {
-			LogErr.Println(" >> Session is null")
+			LogErr.Println("Session is null")
 		}
 		if err != nil {
-			LogErr.Println(" >> Error found", err)
+			LogErr.Println("Error found: ", err)
 		}
 		http.Redirect(response, request, "/login", http.StatusPermanentRedirect)
 		return
@@ -188,13 +190,21 @@ Expected: %s
 				return
 			}
 		} else {
-			LogStd.Println("Not checking for state. State for session not found.")
+			gothic.Logout(response, request)
+			http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusUnauthorized)
+			return
 		}
 	}
 
-	_, err := gothic.CompleteUserAuth(response, request)
+	user, err := gothic.CompleteUserAuth(response, request)
 
 	if err != nil {
+		gothic.Logout(response, request)
+		http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusUnauthorized)
+		return
+	}
+
+	if !UserHandler(&user) {
 		gothic.Logout(response, request)
 		http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusUnauthorized)
 		return

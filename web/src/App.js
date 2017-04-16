@@ -18,15 +18,18 @@ class StatefulRenderer extends Component {
     user: null
   }
 
+  constructor(props) {
+    super(props)
+    this.updateUser = this.updateUser.bind(this)
+  }
+
   checkUser() {
     if (!this.state.user) {
       fetch(Constants.user, { method: 'GET', credentials: 'include' })
         .then(response => {
           if (response.ok) {
-            response.text()
+            response.json()
               .then(newUser => this.setState({ user: newUser }))
-          } else {
-            console.log('Error fetching user')
           }
         })
     }
@@ -47,9 +50,9 @@ class StatefulRenderer extends Component {
         } else {
           this.setState({ entries: [], status: response.status })
         }})
-      .catch(err => {
+      .catch(err =>
         this.setState({ entries: [], status: err.message })
-      })
+      )
   }
 
   fetchData(path) {
@@ -67,6 +70,37 @@ class StatefulRenderer extends Component {
     this.checkUser()
   }
 
+  updateUser(user) {
+    this.setState({ user: null })
+    var req = {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'ShouldShowHidden='
+        + user.ShouldShowHidden
+        + '&ShouldShowProtected='
+        + user.ShouldShowProtected
+    }
+
+    fetch(Constants.userUpdate, req)
+      .then(response => {
+        if (response.ok) {
+          this.fetchFiles(this.state.basePath)
+          response.json()
+            .then(newUser => this.setState({ user: newUser }))
+            .catch(err =>
+              this.setState({ entries: [], status: Constants.statusUnauthorized })
+            )
+        } else {
+          this.setState({ entries: [], status: Constants.statusUnauthorized })
+        }
+      })
+      .catch(err =>
+        this.setState({ entries: [], status: Constants.statusUnauthorized })
+      )
+  }
 
   componentDidMount() {
     if (!this.state.entries) {
@@ -91,7 +125,7 @@ class StatefulRenderer extends Component {
     } else {
       return (
         <div style={{ marginTop: 80 }} >
-          <Title user={this.state.user ? this.state.user : 'Loading..'} />
+          <Title user={this.state.user} authorized={true} updater={this.updateUser} />
           <BrowseList basePath={this.state.basePath} entries={this.state.entries} status={this.state.status} />
         </div>
       )

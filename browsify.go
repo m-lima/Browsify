@@ -81,6 +81,7 @@ func handleFlags() {
 	flag.StringVar(&Home, "home", Home, "base path for browsing")
 	flag.BoolVar(&ShowHidden, "sh", ShowHidden, "show hidden files")
 	flag.BoolVar(&ShowProtected, "sp", ShowProtected, "show hidden files")
+	flag.BoolVar(&DisableCors, "c", DisableCors, "disable CORS protection")
 
 	flag.Parse()
 
@@ -107,6 +108,7 @@ func main() {
 
 	auther.PathConfig.DefaultRedirectSuccess = ui
 	auther.PathConfig.HostedDomain = hostedDomain
+	auther.UserHandler = ValidateUser
 
 	mux := http.NewServeMux()
 
@@ -123,8 +125,9 @@ func main() {
 	mux.HandleFunc(staticPath, staticHandler)
 
 	// Api routes
-	mux.HandleFunc(Api, ApiHandler)
-	mux.HandleFunc(User, UserHandler)
+	mux.HandleFunc(ApiURL, ApiHandler)
+	mux.HandleFunc(UserURL, UserHandler)
+	mux.HandleFunc(UserUpdateURL, UserUpdateHandler)
 
 	// Auth routes
 	mux.HandleFunc(authCallback, auther.AuthCallback)
