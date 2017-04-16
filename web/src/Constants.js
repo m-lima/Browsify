@@ -10,6 +10,7 @@ export const logout = 'https://localhost/logout'
 // export const userUpdate = '/user/update'
 // export const login = '/login'
 // export const logout = '/logout'
+export const failure = '/failure'
 export const statusUnauthorized = 401
 export const statusForbidden = 403
 export const statusNotFound = 404

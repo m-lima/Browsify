@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"strings"
 	"time"
 
 	"crypto/sha256"
@@ -139,9 +140,17 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
 
 	session, err := gothic.Store.Get(request, providerName+gothic.SessionName)
 	if err == nil && session != nil {
+		referer := request.Header.Get("Referer")
+		splitReferer := strings.Split(referer, "/")
+		if len(splitReferer) > 4 || splitReferer[3] != PathConfig.RedirectFailure[1:] {
+			session.Values["redirect"] = referer
+		} else {
+			session.Values["redirect"] = PathConfig.DefaultRedirectSuccess
+		}
+
 		state := generateState()
 		session.Values["state"] = state
-		session.Values["redirect"] = request.Header.Get("Referer")
+
 		session.Save(request, response)
 		query.Set("state", state)
 	} else {
@@ -167,18 +176,18 @@ func AuthCallback(response http.ResponseWriter, request *http.Request) {
 		if hd := url.Query().Get("hd"); PathConfig.HostedDomain != "" && hd != PathConfig.HostedDomain {
 			LogStd.Println("Hosted domain did not match. Got", hd)
 			gothic.Logout(response, request)
-			http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusUnauthorized)
+			http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusPermanentRedirect)
 			return
 		}
 	}
 
-	redirectSucess := PathConfig.DefaultRedirectSuccess
+	redirectSuccess := PathConfig.DefaultRedirectSuccess
 
 	{
 		session, err := gothic.Store.Get(request, providerName+gothic.SessionName)
 		if session != nil && err == nil {
 			state := session.Values["state"]
-			redirectSucess = session.Values["redirect"].(string)
+			redirectSuccess = session.Values["redirect"].(string)
 
 			queryState := url.Query().Get("state")
 			if queryState != state {
@@ -186,12 +195,12 @@ func AuthCallback(response http.ResponseWriter, request *http.Request) {
 Expected: %s
      Got: %s`, state, queryState)
 				gothic.Logout(response, request)
-				http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusUnauthorized)
+				http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusPermanentRedirect)
 				return
 			}
 		} else {
 			gothic.Logout(response, request)
-			http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusUnauthorized)
+			http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusPermanentRedirect)
 			return
 		}
 	}
@@ -200,17 +209,17 @@ Expected: %s
 
 	if err != nil {
 		gothic.Logout(response, request)
-		http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusUnauthorized)
+		http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusPermanentRedirect)
 		return
 	}
 
 	if !UserHandler(&user) {
 		gothic.Logout(response, request)
-		http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusUnauthorized)
+		http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusPermanentRedirect)
 		return
 	}
 
-	http.Redirect(response, request, redirectSucess, http.StatusPermanentRedirect)
+	http.Redirect(response, request, redirectSuccess, http.StatusPermanentRedirect)
 }
 
 func GetUser(response http.ResponseWriter, request *http.Request) (goth.User, error) {

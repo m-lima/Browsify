@@ -56,6 +56,10 @@ class StatefulRenderer extends Component {
   }
 
   fetchData(path) {
+    if (!this.props.location.pathname.startsWith(Constants.ui)) {
+      return
+    }
+
     if (path === undefined || path === '') {
       path = this.props.location.pathname
     }
@@ -120,6 +124,15 @@ class StatefulRenderer extends Component {
         <div style={{ height: '100%'}} >
           <Title />
           <Landing />
+        </div>
+      )
+    } else if (this.props.location.pathname.startsWith(Constants.failure)) {
+      return (
+        <div style={{ height: '100%', padding: 80, backgroundColor: '#222222', color: 'lightgray' }} >
+          <Title />
+          <h3>Unauthorized</h3>
+          <p>User is not allowed to access this site</p>
+          <a href={Constants.login}>Retry</a>
         </div>
       )
     } else {

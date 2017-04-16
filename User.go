@@ -23,9 +23,9 @@ var (
 			Avatar: "https://lh5.googleusercontent.com/-i2nXCcG77N0/AAAAAAAAAAI/AAAAAAAAAC0/d4xJpxg2mDM/photo.jpg",
 			Admin:  true,
 		},
-		User{
-			Email: "marcelowind@gmail.com",
-		},
+		// User{
+		// 	Email: "marcelowind@gmail.com",
+		// },
 		User{
 			Email: "kris@telenordigital.com",
 		},
