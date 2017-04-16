@@ -5,6 +5,7 @@ import {
   Nav,
   Navbar,
   NavDropdown,
+  NavItem,
   Checkbox,
   Image
 } from 'react-bootstrap';
@@ -93,21 +94,21 @@ export default class Title extends Component {
           </Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>
-          {this.props.authorized
-            ? <Navbar.Collapse>
-                <Nav pullLeft>
-                  {ProjectList}
-                </Nav>
-                <Nav pullRight>
-                  <UserButton user={this.props.user} updater={this.props.updater} />
-                </Nav>
-              </Navbar.Collapse>
-            : <Navbar.Collapse>
-                <Navbar.Text pullRight>
-                  <Navbar.Link href={Constants.login} style={{ textDecoration: 'none' }}>Login</Navbar.Link>
-                </Navbar.Text>
-              </Navbar.Collapse>
-          }
+        {this.props.authorized
+          ? <Navbar.Collapse>
+              <Nav pullLeft>
+                {ProjectList}
+              </Nav>
+              <Nav pullRight>
+                <UserButton user={this.props.user} updater={this.props.updater} />
+              </Nav>
+            </Navbar.Collapse>
+          : <Navbar.Collapse>
+              <Nav pullRight>
+                <NavItem onClick={() => window.location = Constants.login}>Login</NavItem>
+              </Nav>
+            </Navbar.Collapse>
+        }
       </Navbar>
     )
   }
