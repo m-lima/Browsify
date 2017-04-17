@@ -15,7 +15,7 @@ import logo from './img/lock.svg';
 
 const UserDropdown = (user) =>
   <span>
-    <Image src={user.Avatar} alt='avatar' style={{ height: 20, marginRight: 10 }} rounded />
+    <Image src={user.Avatar} alt='avatar' style={{ height: 35, marginTop: -5, marginBottom: -5, marginRight: 10 }} rounded />
     {user.Email}
   </span>
 
@@ -47,7 +47,7 @@ const ShowProtected = (props) => (
 
 const UserButton = (props) => (
   props.user
-  ? <NavDropdown id='user-dropdown' title={UserDropdown(props.user)} eventKey={1}>
+  ? <NavDropdown id='user-dropdown' title={UserDropdown(props.user)}  eventKey={1}>
       {props.user.Admin && <MenuItem>Admin Panel</MenuItem>}
       {props.user.Admin && <MenuItem divider />}
 
