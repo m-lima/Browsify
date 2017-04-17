@@ -37,10 +37,18 @@ const ContentRenderer = (props) => {
     )
   }
 
+  if (props.status === Constants.statusNotFound) {
+    return(
+      <b>
+        Not found
+      </b>
+    )
+  }
+
   if (props.status) {
     return (
       <b>
-        {props.status}
+        An error occurred
       </b>
     )
   }

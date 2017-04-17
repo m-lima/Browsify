@@ -3,6 +3,10 @@ import {
   BrowserRouter as Router,
   Route
 } from 'react-router-dom';
+import {
+  Grid,
+  Row
+} from 'react-bootstrap';
 
 import Title from './Title.js'
 import BrowseList from './Browse.js'
@@ -119,29 +123,48 @@ class StatefulRenderer extends Component {
   }
 
   render() {
-    if (this.state.status === Constants.statusUnauthorized) {
-      return (
-        <div style={{ height: '100%'}} >
-          <Title />
-          <Landing />
-        </div>
-      )
-    } else if (this.props.location.pathname.startsWith(Constants.failure)) {
-      return (
-        <div style={{ height: '100%', padding: 80, backgroundColor: '#222222', color: 'lightgray' }} >
-          <Title />
-          <h3>Unauthorized</h3>
-          <p>User is not allowed to access this site</p>
-          <a href={Constants.login}>Retry</a>
-        </div>
-      )
-    } else {
-      return (
-        <div style={{ marginTop: 80 }} >
-          <Title user={this.state.user} authorized={true} updater={this.updateUser} />
-          <BrowseList basePath={this.state.basePath} entries={this.state.entries} status={this.state.status} />
-        </div>
-      )
+    switch (this.state.status) {
+      case Constants.statusNotFound:
+      case null:
+        return (
+          <div style={{ paddingTop: 80 }} >
+            <Title user={this.state.user} authorized={true} updater={this.updateUser} />
+            <BrowseList basePath={this.state.basePath} entries={this.state.entries} status={this.state.status} />
+          </div>
+        )
+      case Constants.statusUnauthorized:
+        return(
+          <div style={{ height: '100%' }} >
+            <Title />
+            <Landing />
+          </div>
+        )
+      case Constants.statusForbidden:
+        return(
+          <div style={{ height: '100%', paddingTop: 80, backgroundColor: '#222222', color: 'lightgray' }} >
+            <Title />
+            <Grid>
+              <Row>
+                <h3>Unauthorized</h3>
+                <p>The user you logged in with does have access to this site</p>
+                <a href={Constants.login}>Retry</a>
+              </Row>
+            </Grid>
+          </div>
+        )
+      default:
+        return(
+          <div style={{ height: '100%', paddingTop: 80, backgroundColor: '#222222', color: 'lightgray' }} >
+            <Title user={this.state.user} authorized={true} updater={this.updateUser} />
+            <Grid>
+              <Row>
+                <h3>Oops!</h3>
+                <p>An error occured while processing your request</p>
+                <a href={Constants.ui}>Main page</a>
+              </Row>
+            </Grid>
+          </div>
+        )
     }
   }
 }

@@ -18,7 +18,6 @@ const (
 	authCallback = "/authcallback"
 	login        = "/login"
 	logout       = "/logout"
-	failure      = "/failure"
 )
 
 var (
@@ -109,8 +108,6 @@ func main() {
 
 	auther.PathConfig.DefaultRedirectSuccess = ui
 	auther.PathConfig.HostedDomain = hostedDomain
-	auther.PathConfig.RedirectFailure = failure
-	auther.UserHandler = ValidateUser
 
 	mux := http.NewServeMux()
 
@@ -135,9 +132,6 @@ func main() {
 	mux.HandleFunc(authCallback, auther.AuthCallback)
 	mux.HandleFunc(login, auther.LoginHandler)
 	mux.HandleFunc(logout, auther.LogoutHandler)
-	mux.HandleFunc(failure, func(response http.ResponseWriter, request *http.Request) {
-		http.ServeFile(response, request, uiPath+"/index.html")
-	})
 
 	launchServer(mux)
 }

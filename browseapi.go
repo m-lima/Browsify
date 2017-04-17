@@ -61,7 +61,7 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 
 	user, err := GetUser(&sessionUser)
 	if err != nil {
-		response.WriteHeader(http.StatusUnauthorized)
+		response.WriteHeader(http.StatusForbidden)
 		return
 	}
 
@@ -131,7 +131,7 @@ func UserHandler(response http.ResponseWriter, request *http.Request) {
 	if err == nil {
 		json.NewEncoder(response).Encode(user)
 	} else {
-		response.WriteHeader(http.StatusUnauthorized)
+		response.WriteHeader(http.StatusForbidden)
 	}
 }
 
@@ -151,7 +151,7 @@ func UserUpdateHandler(response http.ResponseWriter, request *http.Request) {
 
 	user, err := GetUser(&sessionUser)
 	if err != nil {
-		response.WriteHeader(http.StatusUnauthorized)
+		response.WriteHeader(http.StatusForbidden)
 		return
 	}
 
