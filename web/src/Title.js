@@ -83,7 +83,7 @@ export default class Title extends Component {
           {this.props.authorized &&
             <Navbar.Brand>
               <Link to={Constants.ui}>
-                <img src={logo} className='Title-logo' alt='logo' style={{ height: '20px' }} />
+                <img src={logo} alt='logo' style={{ height: 20 }} />
               </Link>
             </Navbar.Brand>
           }
