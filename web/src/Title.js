@@ -15,7 +15,12 @@ import logo from './img/lock.svg';
 
 const UserDropdown = (user) =>
   <span>
-    <Image src={user.Avatar} alt='' style={{ height: 30, marginTop: -5, marginBottom: -5, marginRight: 10 }} rounded />
+    <Image
+      src={user.Avatar}
+      alt=''
+      style={{ height: 30, marginTop: -5, marginBottom: -5, marginRight: 10 }}
+      rounded
+    />
     {user.Email}
   </span>
 
@@ -78,7 +83,8 @@ export default class Title extends Component {
 
   state = {
     user: null,
-    loading: false
+    loading: false,
+    authorized : false
   }
 
   constructor(props) {
@@ -90,8 +96,15 @@ export default class Title extends Component {
     this.fetchUser()
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.authorized !== this.state.authorized) {
+      this.fetchUser()
+    }
+  }
+
   invalidateUser() {
-    this.setState({ user: null, loading: false })
+    this.setState({ user: null, loading: false, authorized: false })
+    this.props.authUpdater(false)
   }
 
   performUserFetch(url, request) {
@@ -100,12 +113,15 @@ export default class Title extends Component {
       return
     }
 
-    this.setState({ loading: true })
+    this.setState({ loading: true, authorized: false })
     fetch(url, request)
       .then(response => {
         if (response.ok) {
           response.json()
-            .then(newUser => this.setState({ user: newUser, loading: false }))
+            .then(newUser => {
+              this.setState({ user: newUser, loading: false, authorized: true })
+              this.props.authUpdater(true)
+            })
             .catch(this.invalidateUser)
         } else {
           this.invalidateUser()

@@ -43,30 +43,35 @@ export default class Main extends Component {
     path: '',
     entries: [],
     loading: false,
-    status: null
+    status: null,
+    authorized: false
   }
 
   componentDidMount() {
     this.fetchData(this.props.path)
+    console.log(this.props)
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps !== this.props) {
+    if (nextProps.path !== this.props.path || nextProps.authorized !== this.state.authorized) {
       this.fetchData(nextProps.path)
     }
   }
 
   invalidateData(error) {
-    this.setState({ entries: [], loading: false, status: error } )
+    var authorized = (error !== Constants.statusUnauthorized && error !== Constants.statusForbidden)
+    this.setState({ entries: [], loading: false, status: error, authorized: authorized } )
+    this.props.authUpdater(authorized)
   }
 
   fetchData(path) {
-    this.setState({ path: path, loading: true })
+    this.setState({ path: path, loading: true, authorized: false })
     fetch(Constants.api + path, { method: 'GET', credentials: 'include' })
       .then(response => {
         if (response.ok) {
           response.json().then(newEntries => {
-            this.setState({ entries: newEntries, loading: false, status: Constants.statusOK })
+            this.setState({ entries: newEntries, loading: false, status: Constants.statusOK, authorized: true })
+            this.props.authUpdater(true)
           })
           .catch(() => this.invalidateData(Constants.statusNotFound))
         } else {
