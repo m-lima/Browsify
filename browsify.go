@@ -108,6 +108,7 @@ func main() {
 
 	auther.PathConfig.DefaultRedirectSuccess = ui
 	auther.PathConfig.HostedDomain = hostedDomain
+	auther.UserValidator = ValidateUser
 
 	mux := http.NewServeMux()
 

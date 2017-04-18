@@ -19,9 +19,9 @@ type User struct {
 var (
 	authorizedUsers = [...]User{
 		User{
-			Email:  "marcelo@telenordigital.com",
-			Avatar: "https://lh5.googleusercontent.com/-i2nXCcG77N0/AAAAAAAAAAI/AAAAAAAAAC0/d4xJpxg2mDM/photo.jpg",
-			Admin:  true,
+			Email: "marcelo@telenordigital.com",
+			// Avatar: "https://lh5.googleusercontent.com/-i2nXCcG77N0/AAAAAAAAAAI/AAAAAAAAAC0/d4xJpxg2mDM/photo.jpg",
+			Admin: true,
 		},
 		// User{
 		// 	Email: "marcelowind@gmail.com",
@@ -41,7 +41,7 @@ func ValidateUser(sessionUser *goth.User) bool {
 		}
 	}
 
-	return false
+	return true
 }
 
 func GetUser(sessionUser *goth.User) (User, error) {

@@ -41,6 +41,10 @@ var (
 
 	LogStd = log.New(os.Stdout, "auther: ", 0)
 	LogErr = log.New(os.Stderr, "auther: ", 0)
+
+	UserValidator = func(*goth.User) bool {
+		return true
+	}
 )
 
 func init() {
@@ -194,7 +198,13 @@ Expected: %s
 		}
 	}
 
-	_, err := gothic.CompleteUserAuth(response, request)
+	user, err := gothic.CompleteUserAuth(response, request)
+
+	if !UserValidator(&user) {
+		gothic.Logout(response, request)
+		http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusPermanentRedirect)
+		return
+	}
 
 	if err != nil {
 		gothic.Logout(response, request)

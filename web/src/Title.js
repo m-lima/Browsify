@@ -15,7 +15,7 @@ import logo from './img/lock.svg';
 
 const UserDropdown = (user) =>
   <span>
-    <Image src={user.Avatar} alt='avatar' style={{ height: 35, marginTop: -5, marginBottom: -5, marginRight: 10 }} rounded />
+    <Image src={user.Avatar} alt='' style={{ height: 30, marginTop: -5, marginBottom: -5, marginRight: 10 }} rounded />
     {user.Email}
   </span>
 
@@ -26,7 +26,7 @@ const ShowHidden = (props) => (
         props.updater(props.user)
       }}>
       {props.user.ShouldShowHidden
-        ? <Checkbox checked >Hidden</Checkbox>
+        ? <Checkbox defaultChecked >Hidden</Checkbox>
         : <Checkbox>Hidden</Checkbox>
       }
     </MenuItem>
@@ -39,7 +39,7 @@ const ShowProtected = (props) => (
         props.updater(props.user)
       }}>
       {props.user.ShouldShowProtected
-        ? <Checkbox checked >Protected</Checkbox>
+        ? <Checkbox defaultChecked >Protected</Checkbox>
         : <Checkbox>Protected</Checkbox>
       }
     </MenuItem>
@@ -47,7 +47,7 @@ const ShowProtected = (props) => (
 
 const UserButton = (props) => (
   props.user
-  ? <NavDropdown id='user-dropdown' title={UserDropdown(props.user)}  eventKey={1}>
+  ? <NavDropdown id='user-dropdown' title={UserDropdown(props.user)} style={{ height: 50 }}  eventKey={1}>
       {props.user.Admin && <MenuItem>Admin Panel</MenuItem>}
       {props.user.Admin && <MenuItem divider />}
 
@@ -76,11 +76,69 @@ const ProjectList = (
 
 export default class Title extends Component {
 
+  state = {
+    user: null,
+    loading: false
+  }
+
+  constructor(props) {
+    super(props)
+    this.updateUser = this.updateUser.bind(this)
+  }
+
+  componentDidMount() {
+    this.fetchUser()
+  }
+
+  invalidateUser() {
+    this.setState({ user: null, loading: false })
+  }
+
+  performUserFetch(url, request) {
+    if (!url || !request) {
+      this.invalidateUser()
+      return
+    }
+
+    this.setState({ loading: true })
+    fetch(url, request)
+      .then(response => {
+        if (response.ok) {
+          response.json()
+            .then(newUser => this.setState({ user: newUser, loading: false }))
+            .catch(this.invalidateUser)
+        } else {
+          this.invalidateUser()
+        }
+      })
+      .catch(this.invalidateUser)
+  }
+
+  fetchUser() {
+    this.performUserFetch(Constants.user, { method: 'GET', credentials: 'include' })
+  }
+
+  updateUser(user) {
+    var req = {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'ShouldShowHidden='
+        + user.ShouldShowHidden
+        + '&ShouldShowProtected='
+        + user.ShouldShowProtected
+    }
+
+    this.performUserFetch(Constants.userUpdate, req)
+  }
+
   render() {
     return (
       <Navbar inverse collapseOnSelect fixedTop>
         <Navbar.Header>
-          {this.props.authorized &&
+          {this.state.user &&
             <Navbar.Brand>
               <Link to={Constants.ui}>
                 <img src={logo} alt='logo' style={{ height: 20 }} />
@@ -94,18 +152,24 @@ export default class Title extends Component {
           </Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>
-        {this.props.authorized
+        {this.state.user
           ? <Navbar.Collapse>
               <Nav pullLeft>
                 {ProjectList}
               </Nav>
               <Nav pullRight>
-                <UserButton user={this.props.user} updater={this.props.updater} />
+                {this.state.loading
+                  ? <Navbar.Text>Loading..</Navbar.Text>
+                  : <UserButton user={this.state.user} updater={this.updateUser} />
+                }
               </Nav>
             </Navbar.Collapse>
           : <Navbar.Collapse>
               <Nav pullRight>
-                <NavItem onClick={() => window.location = Constants.login}>Login</NavItem>
+                {this.state.loading
+                  ? <Navbar.Text>Loading..</Navbar.Text>
+                  : <NavItem onClick={() => window.location = Constants.login}>Login</NavItem>
+                }
               </Nav>
             </Navbar.Collapse>
         }
