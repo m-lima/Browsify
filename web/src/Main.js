@@ -49,7 +49,6 @@ export default class Main extends Component {
 
   componentDidMount() {
     this.fetchData(this.props.path)
-    console.log(this.props)
   }
 
   componentWillReceiveProps(nextProps) {

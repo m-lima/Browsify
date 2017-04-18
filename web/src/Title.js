@@ -50,25 +50,6 @@ const ShowProtected = (props) => (
     </MenuItem>
 )
 
-const UserButton = (props) => (
-  props.user
-  ? <NavDropdown id='user-dropdown' title={UserDropdown(props.user)} style={{ height: 50 }}  eventKey={1}>
-      {props.user.Admin && <MenuItem>Admin Panel</MenuItem>}
-      {props.user.Admin && <MenuItem divider />}
-
-      <ShowHidden user={props.user} updater={props.updater} />
-      <ShowProtected user={props.user} updater={props.updater} />
-      {(props.user.Admin || props.user.CanShowHidden || props.user.CanShowProtected) && <MenuItem divider />}
-
-      <MenuItem eventKey={1.1} onClick={() =>
-        fetch(Constants.logout, { method: 'POST', credentials: 'include' })
-          .then(window.location.reload())}>
-        Logout
-      </MenuItem>
-    </NavDropdown>
-  : <Navbar.Text>Loading..</Navbar.Text>
-)
-
 const ProjectList = (
   <NavDropdown eventKey={1} title='Projects' id='project-dropdown'>
     <MenuItem eventKey={1.1}>Overview</MenuItem>
@@ -150,6 +131,45 @@ export default class Title extends Component {
     this.performUserFetch(Constants.userUpdate, req)
   }
 
+  renderUserButton() {
+    if (this.state.loading) {
+      return <Navbar.Text pullRight>Loading..</Navbar.Text>
+    }
+
+    if (this.state.user) {
+      var user = this.state.user
+      return (
+        <Nav pullRight>
+          <NavDropdown
+            id='user-dropdown'
+            title={UserDropdown(user)}
+            style={{ height: 50 }}
+            eventKey={1}>
+
+            {user.Admin && <MenuItem>Admin Panel</MenuItem>}
+            {user.Admin && <MenuItem divider />}
+
+            <ShowHidden user={user} updater={this.updateUser} />
+            <ShowProtected user={user} updater={this.updateUser} />
+            {(user.Admin || user.CanShowHidden || user.CanShowProtected) && <MenuItem divider />}
+
+            <MenuItem eventKey={1.1} onClick={() =>
+              fetch(Constants.logout, { method: 'POST', credentials: 'include' })
+                .then(this.fetchUser())}>
+              Logout
+            </MenuItem>
+          </NavDropdown>
+        </Nav>
+      )
+    }
+
+    return (
+      <Nav pullRight>
+        <NavItem onClick={() => window.location = Constants.login}>Login</NavItem>
+      </Nav>
+    )
+  }
+
   render() {
     return (
       <Navbar inverse collapseOnSelect fixedTop>
@@ -168,27 +188,14 @@ export default class Title extends Component {
           </Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>
-        {this.state.user
-          ? <Navbar.Collapse>
-              <Nav pullLeft>
-                {ProjectList}
-              </Nav>
-              <Nav pullRight>
-                {this.state.loading
-                  ? <Navbar.Text>Loading..</Navbar.Text>
-                  : <UserButton user={this.state.user} updater={this.updateUser} />
-                }
-              </Nav>
-            </Navbar.Collapse>
-          : <Navbar.Collapse>
-              <Nav pullRight>
-                {this.state.loading
-                  ? <Navbar.Text>Loading..</Navbar.Text>
-                  : <NavItem onClick={() => window.location = Constants.login}>Login</NavItem>
-                }
-              </Nav>
-            </Navbar.Collapse>
-        }
+        <Navbar.Collapse>
+          {this.state.user &&
+            <Nav pullLeft>
+              {ProjectList}
+            </Nav>
+          }
+          {this.renderUserButton()}
+        </Navbar.Collapse>
       </Navbar>
     )
   }
