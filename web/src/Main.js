@@ -7,7 +7,6 @@ import {
   Row
 } from 'react-bootstrap';
 
-import './Main.css'
 import * as Constants from './Constants.js'
 import logo from './img/lockHollow.svg';
 
@@ -162,7 +161,7 @@ export default class Main extends Component {
       case Constants.statusUnauthorized:
         return (
           <div className='Landing'>
-            <img src={logo} className='Landing-logo' alt='logo' />
+            <img src={logo} alt='Securidash' style={{ height: 350 }} />
           </div>
         )
       case Constants.statusForbidden:

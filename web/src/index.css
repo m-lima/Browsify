@@ -1,11 +1,24 @@
-html, body {
+html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
 }
 
-#root {
+.Landing {
   height: 100%;
   margin: 0;
   padding: 0;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background-color: #222222;
+}
+
+#user-dropdown {
+  height: 50px;
 }

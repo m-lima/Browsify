@@ -18,7 +18,7 @@ const UserDropdown = (user) =>
     <Image
       src={user.Avatar}
       alt=''
-      style={{ height: 30, marginTop: -5, marginBottom: -5, marginRight: 10 }}
+      style={{ height: 36, marginTop: -8, marginBottom: -8, marginRight: 10 }}
       rounded
     />
     {user.Email}
