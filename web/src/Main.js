@@ -52,8 +52,14 @@ export default class Main extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.path !== this.props.path || nextProps.authorized !== this.state.authorized) {
+    if (nextProps.authorized !== this.state.authorized) {
       this.fetchData(nextProps.path)
+      return
+    }
+
+    if (nextProps.refresh !== this.props.refresh || nextProps.path !== this.props.path) {
+      this.fetchData(nextProps.path)
+      return
     }
   }
 

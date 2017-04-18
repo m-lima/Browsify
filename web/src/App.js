@@ -11,16 +11,22 @@ import * as Constants from './Constants.js'
 class StatefulRenderer extends Component {
 
   state = {
-    authorized: false
+    authorized: false,
+    refresh: false
   }
 
   constructor(props) {
     super(props)
     this.updateAuth = this.updateAuth.bind(this)
+    this.refresh = this.refresh.bind(this)
   }
 
   updateAuth(authorized) {
     this.setState({ authorized: authorized })
+  }
+
+  refresh() {
+    this.setState({ refresh: !this.state.refresh })
   }
 
   cleanPath(path) {
@@ -46,11 +52,13 @@ class StatefulRenderer extends Component {
         <Title
           authorized={this.state.authorized}
           authUpdater={this.updateAuth}
+          refresher={this.refresh}
         />
         <Main
           authorized={this.state.authorized}
           authUpdater={this.updateAuth}
           path={this.cleanPath(this.props.location.basePath)}
+          refresh={this.state.refresh}
         />
       </div>
     )

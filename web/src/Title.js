@@ -64,8 +64,7 @@ export default class Title extends Component {
 
   state = {
     user: null,
-    loading: false,
-    authorized : false
+    loading: false
   }
 
   constructor(props) {
@@ -78,13 +77,13 @@ export default class Title extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.authorized !== this.state.authorized) {
+    if (nextProps.authorized !== (this.state.user !== null)) {
       this.fetchUser()
     }
   }
 
   invalidateUser() {
-    this.setState({ user: null, loading: false, authorized: false })
+    this.setState({ user: null, loading: false })
     this.props.authUpdater(false)
   }
 
@@ -94,13 +93,13 @@ export default class Title extends Component {
       return
     }
 
-    this.setState({ loading: true, authorized: false })
+    this.setState({ loading: true })
     fetch(url, request)
       .then(response => {
         if (response.ok) {
           response.json()
             .then(newUser => {
-              this.setState({ user: newUser, loading: false, authorized: true })
+              this.setState({ user: newUser, loading: false })
               this.props.authUpdater(true)
             })
             .catch(this.invalidateUser)
@@ -128,6 +127,7 @@ export default class Title extends Component {
         + user.ShouldShowProtected
     }
 
+    this.props.refresher()
     this.performUserFetch(Constants.userUpdate, req)
   }
 
