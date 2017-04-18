@@ -143,7 +143,6 @@ export default class Title extends Component {
           <NavDropdown
             id='user-dropdown'
             title={UserDropdown(user)}
-            style={{ height: 50 }}
             eventKey={1}>
 
             {user.Admin && <MenuItem>Admin Panel</MenuItem>}
