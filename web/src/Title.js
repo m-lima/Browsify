@@ -70,6 +70,7 @@ export default class Title extends Component {
   constructor(props) {
     super(props)
     this.updateUser = this.updateUser.bind(this)
+    this.invalidateUser = this.invalidateUser.bind(this)
   }
 
   componentDidMount() {

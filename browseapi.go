@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/m-lima/browsify/auther"
+	"ghe.telenordigital.com/marcelo-lima/securidash/auther"
 )
 
 const (

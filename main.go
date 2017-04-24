@@ -8,12 +8,12 @@ import (
 
 	"net/http"
 
-	"github.com/m-lima/browsify/auther"
+	"ghe.telenordigital.com/marcelo-lima/securidash/auther"
 )
 
 const (
 	staticPath = "/static/"
-	uiPath     = "web/build"
+	uiPath     = "web"
 
 	authCallback = "/authcallback"
 	login        = "/login"
@@ -22,10 +22,10 @@ const (
 
 var (
 	host         = "localhost"
-	clientID     = "oauth.client.id.hide"
-	clientSecret = "oauth.client.secret.hide"
-	serverCert   = "server.crt.hide"
-	serverKey    = "server.key.hide"
+	clientID     = "oauth.client.id"
+	clientSecret = "oauth.client.secret"
+	serverCert   = "server.crt"
+	serverKey    = "server.key"
 	hostedDomain = ""
 	ui           = "/ui/"
 )
@@ -72,16 +72,16 @@ func launchServer(mux *http.ServeMux) {
 
 func handleFlags() {
 	flag.StringVar(&host, "host", host, "the host for this server")
-	flag.StringVar(&clientID, "cid", clientID, "file path for the client ID file")
+	flag.StringVar(&ui, "ui", ui, "URL path for main UI")
+	flag.StringVar(&Home, "home", Home, "base path for browsing")
+
+	flag.BoolVar(&DisableCors, "dc", DisableCors, "disable CORS protection")
+	flag.StringVar(&hostedDomain, "hd", hostedDomain, "authorized domains for OpenID authentication")
+
+	flag.StringVar(&clientID, "ci", clientID, "file path for the client ID file")
 	flag.StringVar(&clientSecret, "cs", clientSecret, "file path for the client secret file")
 	flag.StringVar(&serverCert, "sc", serverCert, "file path for the server certificate file")
 	flag.StringVar(&serverKey, "sk", serverKey, "file path for the server key file")
-	flag.StringVar(&hostedDomain, "hd", hostedDomain, "authorized domains for OpenID authentication")
-	flag.StringVar(&ui, "ui", ui, "URL path for main UI")
-	flag.StringVar(&Home, "home", Home, "base path for browsing")
-	flag.BoolVar(&ShowHidden, "sh", ShowHidden, "show hidden files")
-	flag.BoolVar(&ShowProtected, "sp", ShowProtected, "show hidden files")
-	flag.BoolVar(&DisableCors, "c", DisableCors, "disable CORS protection")
 
 	flag.Parse()
 

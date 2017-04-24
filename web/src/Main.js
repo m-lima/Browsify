@@ -63,7 +63,7 @@ export default class Main extends Component {
   }
 
   invalidateData(error) {
-    var authorized = (error !== Constants.statusUnauthorized && error !== Constants.statusForbidden)
+    var authorized = (error === Constants.statusNotFound)
     this.setState({ entries: [], loading: false, status: error, authorized: authorized } )
     this.props.authUpdater(authorized)
   }
@@ -77,12 +77,12 @@ export default class Main extends Component {
             this.setState({ entries: newEntries, loading: false, status: Constants.statusOK, authorized: true })
             this.props.authUpdater(true)
           })
-          .catch(() => this.invalidateData(Constants.statusNotFound))
+          .catch(() => this.invalidateData(Constants.statusError))
         } else {
           this.invalidateData(response.status)
         }
       })
-      .catch(() => this.invalidateData(Constants.statusNotFound))
+      .catch(() => this.invalidateData(Constants.statusError))
   }
 
   generateBreadcrumb(path) {

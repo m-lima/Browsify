@@ -17,15 +17,12 @@ type User struct {
 }
 
 var (
+	// Mock user base
 	authorizedUsers = [...]User{
 		User{
 			Email: "marcelo@telenordigital.com",
-			// Avatar: "https://lh5.googleusercontent.com/-i2nXCcG77N0/AAAAAAAAAAI/AAAAAAAAAC0/d4xJpxg2mDM/photo.jpg",
 			Admin: true,
 		},
-		// User{
-		// 	Email: "marcelowind@gmail.com",
-		// },
 		User{
 			Email: "kris@telenordigital.com",
 		},
