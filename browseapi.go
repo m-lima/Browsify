@@ -17,13 +17,6 @@ const (
 	UserUpdateURL = "/user/update"
 )
 
-var (
-	Home          = os.Getenv("HOME")
-	ShowHidden    = false
-	ShowProtected = false
-	DisableCors   = false
-)
-
 type directoryEntry struct {
 	Name      string
 	Directory bool
@@ -32,7 +25,7 @@ type directoryEntry struct {
 }
 
 func corsProtection(response http.ResponseWriter, request *http.Request) {
-	if DisableCors {
+	if Configuration.Server.DisableCors {
 		response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
 		response.Header().Set("Access-Control-Allow-Credentials", "true")
 	}
@@ -59,7 +52,7 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	user, err := GetUser(&sessionUser)
+	user, err := ReadUser(&sessionUser)
 	if err != nil {
 		response.WriteHeader(http.StatusForbidden)
 		return
@@ -69,13 +62,13 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 	systemPath := ""
 
 	if path == ApiURL || path == ApiURL[:len(ApiURL)-1] {
-		systemPath = Home
+		systemPath = Configuration.Server.Home
 		path = ApiURL
 	} else {
 		if path[len(path)-1] == '/' {
 			path = path[:len(path)-1]
 		}
-		systemPath = Home + "/" + path[len(ApiURL):]
+		systemPath = Configuration.Server.Home + "/" + path[len(ApiURL):]
 	}
 
 	// Not found
@@ -127,7 +120,7 @@ func UserHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	user, err := GetUser(&sessionUser)
+	user, err := ReadUser(&sessionUser)
 	if err == nil {
 		json.NewEncoder(response).Encode(user)
 	} else {
@@ -149,7 +142,7 @@ func UserUpdateHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	user, err := GetUser(&sessionUser)
+	user, err := ReadUser(&sessionUser)
 	if err != nil {
 		response.WriteHeader(http.StatusForbidden)
 		return
@@ -170,7 +163,7 @@ func UserUpdateHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	user, err = GetUser(&sessionUser)
+	user, err = ReadUser(&sessionUser)
 	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
 		return

@@ -13,7 +13,7 @@ import (
 
 const (
 	staticPath = "/static/"
-	uiPath     = "web/build"
+	uiPath     = "web"
 
 	authCallback = "/authcallback"
 	login        = "/login"
@@ -21,13 +21,9 @@ const (
 )
 
 var (
-	host         = "localhost"
-	clientID     = "oauth.client.id.hide"
-	clientSecret = "oauth.client.secret.hide"
-	serverCert   = "server.crt.hide"
-	serverKey    = "server.key.hide"
-	hostedDomain = ""
-	ui           = "/ui/"
+	configFile     = flag.String("c", "securidash.conf", "Configuration file")
+	generateConfig = flag.String("g", "", "File to be generated as default configuration")
+	newUserEmail   = flag.String("a", "", "User email to be added as admin")
 )
 
 func staticHandler(response http.ResponseWriter, request *http.Request) {
@@ -48,7 +44,7 @@ func launchServer(mux *http.ServeMux) {
 		go func() {
 			defer waiter.Done()
 			http.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
-				http.Redirect(response, request, "https://"+host+request.URL.Path, http.StatusPermanentRedirect)
+				http.Redirect(response, request, "https://"+Configuration.Server.Host+request.URL.Path, http.StatusPermanentRedirect)
 			})
 			err := http.ListenAndServe("", nil)
 			if err != nil {
@@ -60,7 +56,7 @@ func launchServer(mux *http.ServeMux) {
 	{
 		go func() {
 			defer waiter.Done()
-			err := http.ListenAndServeTLS("", serverCert, serverKey, mux)
+			err := http.ListenAndServeTLS("", Configuration.Ssl.Certificate, Configuration.Ssl.Key, mux)
 			if err != nil {
 				log.Fatal("Could not start HTTPS server:\n", err)
 			}
@@ -70,56 +66,60 @@ func launchServer(mux *http.ServeMux) {
 	waiter.Wait()
 }
 
-func handleFlags() {
-	flag.StringVar(&host, "host", host, "the host for this server")
-	flag.StringVar(&clientID, "cid", clientID, "file path for the client ID file")
-	flag.StringVar(&clientSecret, "cs", clientSecret, "file path for the client secret file")
-	flag.StringVar(&serverCert, "sc", serverCert, "file path for the server certificate file")
-	flag.StringVar(&serverKey, "sk", serverKey, "file path for the server key file")
-	flag.StringVar(&hostedDomain, "hd", hostedDomain, "authorized domains for OpenID authentication")
-	flag.StringVar(&ui, "ui", ui, "URL path for main UI")
-	flag.StringVar(&Home, "home", Home, "base path for browsing")
-	flag.BoolVar(&ShowHidden, "sh", ShowHidden, "show hidden files")
-	flag.BoolVar(&ShowProtected, "sp", ShowProtected, "show hidden files")
-	flag.BoolVar(&DisableCors, "c", DisableCors, "disable CORS protection")
-
+func main() {
 	flag.Parse()
 
-	if ui[0] != '/' {
-		ui = "/" + ui
+	if *generateConfig != "" {
+		err := GenerateDefaultConfig(*generateConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
 	}
 
-	if ui[len(ui)-1] != '/' {
-		ui += "/"
+	err := LoadConfig(*configFile)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	if Home[len(ui)-1] == '/' {
-		Home = Home[:len(Home)-1]
+	err = InitDB()
+	if err != nil {
+		log.Fatal(err)
 	}
-}
+	defer FinalizeDB()
 
-func main() {
-	handleFlags()
+	if *newUserEmail != "" {
+		err = CreateUser(&User{
+			Email:            *newUserEmail,
+			Admin:            true,
+			CanShowHidden:    true,
+			CanShowProtected: true,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 
-	err := auther.InitProvider(host, authCallback, clientID, clientSecret)
+	err = auther.InitProvider(Configuration.Server.Host, authCallback, Configuration.Oauth.Id, Configuration.Oauth.Secret)
 	if err != nil {
 		log.Fatal("Could not start OpenID provider", err)
 	}
 
-	auther.PathConfig.DefaultRedirectSuccess = ui
-	auther.PathConfig.HostedDomain = hostedDomain
+	auther.PathConfig.DefaultRedirectSuccess = Configuration.Server.Ui
+	auther.PathConfig.HostedDomain = Configuration.Server.HostedDomain
 	auther.UserValidator = ValidateUser
 
 	mux := http.NewServeMux()
 
 	// Main redirect
-	mux.Handle("/", http.RedirectHandler(ui, http.StatusPermanentRedirect))
+	mux.Handle("/", http.RedirectHandler(Configuration.Server.Ui, http.StatusPermanentRedirect))
 
 	// Web UI routes
 	mux.HandleFunc("/favicon.ico", func(response http.ResponseWriter, request *http.Request) {
 		http.ServeFile(response, request, uiPath+"/favicon.ico")
 	})
-	mux.HandleFunc(ui, func(response http.ResponseWriter, request *http.Request) {
+	mux.HandleFunc(Configuration.Server.Ui, func(response http.ResponseWriter, request *http.Request) {
 		http.ServeFile(response, request, uiPath+"/index.html")
 	})
 	mux.HandleFunc(staticPath, staticHandler)
