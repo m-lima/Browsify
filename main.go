@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	configFile     = flag.String("c", "securidash.conf", "Configuration file")
+	configFile     = flag.String("c", "browsify.conf", "Configuration file")
 	generateConfig = flag.String("g", "", "File to be generated as default configuration")
 	newUserEmail   = flag.String("a", "", "User email to be added as admin")
 )

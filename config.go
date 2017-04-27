@@ -43,8 +43,8 @@ type configuration struct {
 var (
 	Configuration = configuration{
 		Db: configDB{
-			Name: "securidash",
-			User: "securidash",
+			Name: "browsify",
+			User: "browsify",
 			Host: "localhost",
 		},
 		Oauth: configOauth{
