@@ -164,7 +164,7 @@ fi
 if [[ "$BUILD_BACK" ]]
 then
   echo "[32mBuilding back-end[m"
-  go install
+  go get && go install
 
   if [ $? ]
   then
