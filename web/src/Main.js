@@ -161,7 +161,7 @@ export default class Main extends Component {
       case Constants.statusUnauthorized:
         return (
           <div className='Landing'>
-            <img src={logo} alt='Securidash' style={{ height: 350 }} />
+            <img src={logo} alt='Browsify' style={{ height: 350 }} />
           </div>
         )
       case Constants.statusForbidden:

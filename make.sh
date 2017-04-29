@@ -125,8 +125,7 @@ if [[ "$BUILD_FRONT" ]]
 then
   echo "[32mBuilding front-end..[m"
   pushd web &> /dev/null
-  npm install
-  npm run build
+  npm install &&  npm run build
 
   if [ $? ]
   then
