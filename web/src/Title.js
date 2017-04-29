@@ -8,7 +8,7 @@ import {
 } from 'react-bootstrap';
 
 import * as Constants from './Constants.js'
-import logo from './img/lock.svg';
+import logo from './img/folder.simple.svg';
 
 const UserButton = (props) => (
   <NavDropdown id={'user-dropdown'} eventKey={1} title={props.user}>
@@ -44,7 +44,7 @@ export default class Title extends Component {
           }
           <Navbar.Brand>
             <Link to={Constants.ui}>
-              Securidash
+              Browsify
             </Link>
           </Navbar.Brand>
           <Navbar.Toggle />

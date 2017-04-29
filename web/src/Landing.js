@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import logo from './img/lockHollow.svg';
+import logo from './img/folder.hollow.svg';
 import './Landing.css'
 
 export default class Landing extends Component {

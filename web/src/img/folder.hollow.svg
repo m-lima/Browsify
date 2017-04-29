@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   version="1.1"
+   width="100%"
+   height="100%"
+   viewBox="0 0 400 400"
+   id="Layer_1"
+   xml:space="preserve"><metadata
+     id="metadata3457"><rdf:RDF><cc:Work
+         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+     id="defs3455"><defs
+       id="defs3441"><rect
+         width="391.10001"
+         height="391.10001"
+         x="0"
+         y="0"
+         id="SVGID_1_" /></defs><clipPath
+       id="SVGID_2_"><use
+         id="use3445"
+         style="overflow:visible"
+         x="0"
+         y="0"
+         width="391.10001"
+         height="391.10001"
+         xlink:href="#SVGID_1_" /></clipPath></defs><style
+     type="text/css"
+     id="style3437" /><path
+     d="M 200,0 C 89.54305,0 0,89.54305 0,200 0,310.45695 89.54305,400 200,400 310.45695,400 400,310.45695 400,200 400,89.54305 310.45695,0 200,0 z m 0,15 C 302.17268,15 385,97.827324 385,200 385,302.17268 302.17268,385 200,385 97.827323,385 15,302.17268 15,200 15,97.827324 97.827323,15 200,15 z"
+     id="path3153"
+     style="color:#000000;fill:#61dafb;fill-opacity:1;stroke:none;stroke-width:10;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" /><path
+     d="m 200,30 c -93.88841,0 -170,76.11159 -170,170 0,93.88841 76.11159,170 170,170 93.88841,0 170,-76.11159 170,-170 C 370,106.11159 293.88841,30 200,30 z m -100.21875,85.75 73.46875,0 0,12.75 a 4.5003999,4.5003999 0 0 0 4.5,4.5 l 122.65625,0 0,32.09375 -87.3125,0 a 4.5003999,4.5003999 0 0 0 -3.25,1.375 l -23.875,24.9375 -57.375,0 a 4.5003999,4.5003999 0 0 0 -4.25,2.96875 l -24.5625,68.53125 0,-147.15625 z M 215,174.09375 l 85.375,0 35.84375,0 -33.03125,110.1875 -2.8125,0 -198.71875,0 30.09375,-83.875 0,-0.0312 56.15625,0 a 4.5003999,4.5003999 0 0 0 1.21875,-0.15625 4.5003999,4.5003999 0 0 0 1.6875,-0.90625 4.5003999,4.5003999 0 0 0 0.3125,-0.28125 4.5003999,4.5003999 0 0 0 0.0312,-0.0312 L 215,174.09375 z"
+     id="path3153-2"
+     style="color:#000000;fill:#61dafb;fill-opacity:1;stroke:none;stroke-width:10;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" /></svg>
