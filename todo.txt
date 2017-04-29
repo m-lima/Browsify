@@ -1,0 +1,5 @@
+[ ]   Better logging
+[ ]   Admin panel
+[ ]   Show stars
+[ ] ? Plugin support
+[ ]   Centralized HTTP handler

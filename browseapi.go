@@ -12,14 +12,9 @@ import (
 )
 
 const (
-	Api  = "/api/"
-	User = "/user"
-)
-
-var (
-	Home          = os.Getenv("HOME")
-	ShowHidden    = false
-	ShowProtected = false
+	ApiURL        = "/api/"
+	UserURL       = "/user"
+	UserUpdateURL = "/user/update"
 )
 
 type directoryEntry struct {
@@ -29,33 +24,51 @@ type directoryEntry struct {
 	Date      time.Time
 }
 
-func shouldDisplayFile(file os.FileInfo) bool {
-	if ShowProtected || file.Mode()&0004 != 0 {
-		if ShowHidden || file.Name()[0] != '.' {
-			return true
-		}
+func corsProtection(response http.ResponseWriter, request *http.Request) {
+	if Configuration.Server.DisableCors {
+		response.Header().Set("Access-Control-Allow-Origin", request.Header.Get("Origin"))
+		response.Header().Set("Access-Control-Allow-Credentials", "true")
 	}
-	return false
+}
+
+func shouldDisplayFile(user *User, file os.FileInfo) bool {
+	if !user.ShouldShowProtected && file.Mode()&0004 == 0 {
+		return false
+	}
+
+	if !user.ShouldShowHidden && file.Name()[0] == '.' {
+		return false
+	}
+
+	return true
 }
 
 func ApiHandler(response http.ResponseWriter, request *http.Request) {
-	_, err := auther.GetUser(response, request)
+	corsProtection(response, request)
+
+	sessionUser, err := auther.GetUser(response, request)
 	if err != nil {
 		response.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	user, err := ReadUser(&sessionUser)
+	if err != nil {
+		response.WriteHeader(http.StatusForbidden)
 		return
 	}
 
 	path := request.URL.Path
 	systemPath := ""
 
-	if path == Api || path == Api[:len(Api)-1] {
-		systemPath = Home
-		path = Api
+	if path == ApiURL || path == ApiURL[:len(ApiURL)-1] {
+		systemPath = Configuration.Server.Home
+		path = ApiURL
 	} else {
 		if path[len(path)-1] == '/' {
 			path = path[:len(path)-1]
 		}
-		systemPath = Home + "/" + path[len(Api):]
+		systemPath = Configuration.Server.Home + "/" + path[len(ApiURL):]
 	}
 
 	// Not found
@@ -65,7 +78,7 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 	}
 
 	// Should not display
-	if file, err := os.Stat(systemPath); err != nil || !shouldDisplayFile(file) {
+	if file, err := os.Stat(systemPath); err != nil || !shouldDisplayFile(&user, file) {
 		response.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -77,7 +90,7 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 			response.Header().Set("Content-type", "application/json")
 			var entries []directoryEntry
 			for _, file := range files {
-				if shouldDisplayFile(file) {
+				if shouldDisplayFile(&user, file) {
 					entries = append(entries, directoryEntry{
 						Name:      file.Name(),
 						Directory: file.IsDir(),
@@ -99,10 +112,62 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 }
 
 func UserHandler(response http.ResponseWriter, request *http.Request) {
-	user, err := auther.GetUser(response, request)
-	if err == nil && user.Email != "" {
-		response.Write([]byte(user.Email))
-	} else {
+	corsProtection(response, request)
+
+	sessionUser, err := auther.GetUser(response, request)
+	if err != nil {
 		response.WriteHeader(http.StatusUnauthorized)
+		return
 	}
+
+	user, err := ReadUser(&sessionUser)
+	if err == nil {
+		json.NewEncoder(response).Encode(user)
+	} else {
+		response.WriteHeader(http.StatusForbidden)
+	}
+}
+
+func UserUpdateHandler(response http.ResponseWriter, request *http.Request) {
+	corsProtection(response, request)
+
+	if request.Method != "POST" {
+		response.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	sessionUser, err := auther.GetUser(response, request)
+	if err != nil {
+		response.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	user, err := ReadUser(&sessionUser)
+	if err != nil {
+		response.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	err = request.ParseForm()
+	if err != nil {
+		response.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	user.ShouldShowHidden = request.PostFormValue("ShouldShowHidden") == "true"
+	user.ShouldShowProtected = request.PostFormValue("ShouldShowProtected") == "true"
+
+	err = UpdateUser(&user)
+	if err != nil {
+		response.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	user, err = ReadUser(&sessionUser)
+	if err != nil {
+		response.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	json.NewEncoder(response).Encode(user)
 }
