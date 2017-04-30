@@ -74,6 +74,10 @@ func FinalizeDB() {
 }
 
 func ValidateUser(sessionUser *goth.User) bool {
+	if session.Email == "" {
+		return false
+	}
+
 	dbLogStd.Println("user logging in:", sessionUser.Email)
 
 	var user User
