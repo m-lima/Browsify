@@ -18,7 +18,7 @@ RUN /go/src/github.com/m-lima/browsify/make.sh -o /opt/browsify \
 
 # Run the server command by default when the container starts.
 WORKDIR /opt/browsify
-ENTRYPOINT /opt/browsify/browsify -c /opt/browsify/browsify.conf > /opt/browsify/log/stdLog 2> /opt/browsify/log/errLog
+ENTRYPOINT /opt/browsify/browsify -c /opt/browsify/browsify.conf
 
 # Document that the service listens on port 8080.
 EXPOSE 80
