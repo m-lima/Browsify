@@ -22,8 +22,8 @@ type User struct {
 }
 
 var (
-	LogStd = log.New(os.Stdout, "db: ", 0)
-	LogErr = log.New(os.Stderr, "db: ", 0)
+	dbLogStd = log.New(os.Stdout, "[db] ", log.Ldate|log.Ltime)
+	dbLogErr = log.New(os.Stderr, "[db] ", log.Ldate|log.Ltime)
 
 	db *gorm.DB
 )
@@ -53,37 +53,37 @@ func InitDB() error {
 	var err error
 	db, err = gorm.Open("postgres", buildConnectionString())
 	if err != nil {
-		LogErr.Println("failed to connect to database")
+		dbLogErr.Println("failed to connect to database")
 		return err
 	}
 
 	err = db.AutoMigrate(&User{}).Error
 	if err != nil {
-		LogErr.Println("failed to automigrate user")
+		dbLogErr.Println("failed to automigrate user")
 		return err
 	}
 
-	LogStd.Println("successful DB initialization")
+	dbLogStd.Println("successful DB initialization")
 
 	return nil
 }
 
 func FinalizeDB() {
 	db.Close()
-	LogStd.Println("successful DB finalization")
+	dbLogStd.Println("successful DB finalization")
 }
 
 func ValidateUser(sessionUser *goth.User) bool {
-	LogStd.Println("user logging in:", sessionUser.Email)
+	dbLogStd.Println("user logging in:", sessionUser.Email)
 
 	var user User
 
 	if !db.Where("email = ?", sessionUser.Email).First(&user).RecordNotFound() {
 		err := db.Model(&user).Update("avatar", sessionUser.AvatarURL).Error
 		if err == nil {
-			LogStd.Println("user avatar updated:", user.Email)
+			dbLogStd.Println("user avatar updated:", user.Email)
 		} else {
-			LogErr.Println("user avatar not updated:", user.Email, err)
+			dbLogErr.Println("user avatar not updated:", user.Email, err)
 		}
 	}
 
@@ -94,7 +94,7 @@ func CreateUser(newUser *User) error {
 	if db.NewRecord(newUser) {
 		err := db.Create(newUser).Error
 		if err != nil {
-			LogErr.Println("could not create user:", newUser.Email)
+			dbLogErr.Println("could not create user:", newUser.Email)
 			return err
 		}
 
@@ -111,17 +111,17 @@ func ReadUser(sessionUser *goth.User) (User, error) {
 		return user, nil
 	}
 
-	LogErr.Println("user is not authorized:", sessionUser.Email)
+	dbLogErr.Println("user is not authorized:", sessionUser.Email)
 	return User{}, errors.New("user is not authorized:" + sessionUser.Email)
 }
 
 func UpdateUser(updatedUser *User) error {
 	err := db.Save(updatedUser).Error
 	if err == nil {
-		LogStd.Println("user updated:", updatedUser.Email)
+		dbLogStd.Println("user updated:", updatedUser.Email)
 		return nil
 	} else {
-		LogErr.Println("could not update user:", updatedUser.Email, err)
+		dbLogErr.Println("could not update user:", updatedUser.Email, err)
 		return err
 	}
 }

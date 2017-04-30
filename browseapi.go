@@ -16,8 +16,11 @@ const (
 	ApiURL        = "/api/"
 	UserURL       = "/user"
 	UserUpdateURL = "/user/update"
-	logStd = log.New(os.Stdout, "api: ")
-	logErr = log.New(os.Stderr, "api: ")
+)
+
+var (
+	apiLogStd = log.New(os.Stdout, "[api] ", log.Ldate|log.Ltime)
+	apiLogErr = log.New(os.Stderr, "[api] ", log.Ldate|log.Ltime)
 )
 
 type directoryEntry struct {
@@ -47,7 +50,7 @@ func shouldDisplayFile(user *User, file os.FileInfo) bool {
 }
 
 func ApiHandler(response http.ResponseWriter, request *http.Request) {
-	
+
 	corsProtection(response, request)
 
 	sessionUser, err := auther.GetUser(response, request)
@@ -74,7 +77,7 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 		}
 		systemPath = Configuration.Server.Home + "/" + path[len(ApiURL):]
 	}
-	logStd.Println("API:", user.Email, "is requesting", path)
+	apiLogStd.Println(user.Email, "is requesting", path)
 
 	// Not found
 	if _, err := os.Stat(systemPath); err != nil {
@@ -159,22 +162,34 @@ func UserUpdateHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	user.ShouldShowHidden = userCanShowHidden ? request.PostFormValue("ShouldShowHidden") == "true" : false
-	user.ShouldShowProtected = user.CanShowProtected ? request.PostFormValue("ShouldShowProtected") == "true" : false
+	apiLogStd.Println("Updating", user.Email)
+	if user.CanShowHidden {
+		user.ShouldShowHidden = request.PostFormValue("ShouldShowHidden") == "true"
+		apiLogStd.Println("Show hidden:", user.ShouldShowHidden)
+	} else if request.PostFormValue("ShouldShowHidden") == "true" {
+		apiLogErr.Println(user.Email, "is trying to show hidden without permission")
+	}
+	if user.CanShowProtected {
+		user.ShouldShowProtected = request.PostFormValue("ShouldShowProtected") == "true"
+		apiLogStd.Println("Show protected:", user.ShouldShowProtected)
+	} else if request.PostFormValue("ShouldShowProtected") == "true" {
+		apiLogErr.Println(user.Email, "is trying to show protected without permission")
+	}
 
 	err = UpdateUser(&user)
 	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
+		apiLogErr.Println("Could not update", user.Email, err)
 		return
 	}
 
 	user, err = ReadUser(&sessionUser)
 	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
+		apiLogErr.Println("Could not update", user.Email, err)
 		return
 	}
 
-	logStd.Println("API:", user.Email, "updated. Hidden =", user.ShouldShowHidden, "Protected =", user.ShouldShowProtected)
-
+	apiLogStd.Println("Successfully updated", user.Email)
 	json.NewEncoder(response).Encode(user)
 }

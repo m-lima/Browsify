@@ -39,8 +39,8 @@ var (
 		DefaultRedirectSuccess: "/",
 	}
 
-	LogStd = log.New(os.Stdout, "auther: ", 0)
-	LogErr = log.New(os.Stderr, "auther: ", 0)
+	LogStd = log.New(os.Stdout, "[auther] ", log.Ldate|log.Ltime)
+	LogErr = log.New(os.Stderr, "[auther] ", log.Ldate|log.Ltime)
 
 	UserValidator = func(*goth.User) bool {
 		return true
