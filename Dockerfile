@@ -11,10 +11,7 @@ RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
 COPY . /go/src/github.com/m-lima/browsify
 
 # Build
-RUN /go/src/github.com/m-lima/browsify/make.sh -o /opt/browsify \
-    && cp /go/src/github.com/m-lima/browsify/*.hide /opt/browsify/. \
-    && cp /go/src/github.com/m-lima/browsify/browsify.conf /opt/browsify/. \
-    && mkdir /opt/browsify/log
+RUN /go/src/github.com/m-lima/browsify/make.sh -o /opt/browsify
 
 # Run the server command by default when the container starts.
 WORKDIR /opt/browsify
