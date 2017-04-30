@@ -50,16 +50,6 @@ const ShowProtected = (props) => (
     </MenuItem>
 )
 
-const ProjectList = (
-  <NavDropdown eventKey={1} title='Projects' id='project-dropdown'>
-    <MenuItem eventKey={1.1}>Overview</MenuItem>
-    <MenuItem divider />
-    <MenuItem eventKey={1.1}>Payment</MenuItem>
-    <MenuItem eventKey={1.1}>OfferAPI</MenuItem>
-    <MenuItem eventKey={1.1}>MobileConnect</MenuItem>
-  </NavDropdown>
-)
-
 export default class Title extends Component {
 
   state = {
@@ -189,11 +179,6 @@ export default class Title extends Component {
           <Navbar.Toggle />
         </Navbar.Header>
         <Navbar.Collapse>
-          {this.state.user &&
-            <Nav pullLeft>
-              {ProjectList}
-            </Nav>
-          }
           {this.renderUserButton()}
         </Navbar.Collapse>
       </Navbar>

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"time"
 
@@ -15,6 +16,8 @@ const (
 	ApiURL        = "/api/"
 	UserURL       = "/user"
 	UserUpdateURL = "/user/update"
+	logStd = log.New(os.Stdout, "api: ")
+	logErr = log.New(os.Stderr, "api: ")
 )
 
 type directoryEntry struct {
@@ -44,6 +47,7 @@ func shouldDisplayFile(user *User, file os.FileInfo) bool {
 }
 
 func ApiHandler(response http.ResponseWriter, request *http.Request) {
+	
 	corsProtection(response, request)
 
 	sessionUser, err := auther.GetUser(response, request)
@@ -70,6 +74,7 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 		}
 		systemPath = Configuration.Server.Home + "/" + path[len(ApiURL):]
 	}
+	logStd.Println("API:", user.Email, "is requesting", path)
 
 	// Not found
 	if _, err := os.Stat(systemPath); err != nil {
@@ -154,8 +159,8 @@ func UserUpdateHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	user.ShouldShowHidden = request.PostFormValue("ShouldShowHidden") == "true"
-	user.ShouldShowProtected = request.PostFormValue("ShouldShowProtected") == "true"
+	user.ShouldShowHidden = userCanShowHidden ? request.PostFormValue("ShouldShowHidden") == "true" : false
+	user.ShouldShowProtected = user.CanShowProtected ? request.PostFormValue("ShouldShowProtected") == "true" : false
 
 	err = UpdateUser(&user)
 	if err != nil {
@@ -168,6 +173,8 @@ func UserUpdateHandler(response http.ResponseWriter, request *http.Request) {
 		response.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	logStd.Println("API:", user.Email, "updated. Hidden =", user.ShouldShowHidden, "Protected =", user.ShouldShowProtected)
 
 	json.NewEncoder(response).Encode(user)
 }

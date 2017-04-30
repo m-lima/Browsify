@@ -8,7 +8,7 @@ import {
 } from 'react-bootstrap';
 
 import * as Constants from './Constants.js'
-import logo from './img/lockHollow.svg';
+import logo from './img/folder.hollow.svg';
 
 const DarkStyle = {
   height: '100%',

@@ -8,3 +8,7 @@ web/elm-stuff/*
 # Build
 browsify
 browsify.exe
+
+# Environment specific files
+browsify.conf
+deploy.sh
