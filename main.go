@@ -24,6 +24,7 @@ var (
 	configFile     = flag.String("c", "browsify.conf", "Configuration file")
 	generateConfig = flag.String("g", "", "File to be generated as default configuration")
 	newUserEmail   = flag.String("a", "", "User email to be added as admin")
+	serverLogger   = log.New(os.Stderr, "ERROR [http] ", log.Ldate|log.Ltime)
 )
 
 func staticHandler(response http.ResponseWriter, request *http.Request) {
@@ -56,7 +57,13 @@ func launchServer(mux *http.ServeMux) {
 	{
 		go func() {
 			defer waiter.Done()
-			err := http.ListenAndServeTLS("", Configuration.Ssl.Certificate, Configuration.Ssl.Key, mux)
+			server := http.Server{
+				Addr:     "",
+				Handler:  mux,
+				ErrorLog: serverLogger,
+			}
+
+			err := server.ListenAndServeTLS(Configuration.Ssl.Certificate, Configuration.Ssl.Key)
 			if err != nil {
 				log.Fatal("Could not start HTTPS server:\n", err)
 			}

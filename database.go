@@ -23,7 +23,7 @@ type User struct {
 
 var (
 	dbLogStd = log.New(os.Stdout, "[db] ", log.Ldate|log.Ltime)
-	dbLogErr = log.New(os.Stderr, "[db] ", log.Ldate|log.Ltime)
+	dbLogErr = log.New(os.Stderr, "ERROR [db] ", log.Ldate|log.Ltime)
 
 	db *gorm.DB
 )

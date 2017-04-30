@@ -40,7 +40,7 @@ var (
 	}
 
 	LogStd = log.New(os.Stdout, "[auther] ", log.Ldate|log.Ltime)
-	LogErr = log.New(os.Stderr, "[auther] ", log.Ldate|log.Ltime)
+	LogErr = log.New(os.Stderr, "ERROR [auther] ", log.Ldate|log.Ltime)
 
 	UserValidator = func(*goth.User) bool {
 		return true

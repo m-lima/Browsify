@@ -20,7 +20,7 @@ const (
 
 var (
 	apiLogStd = log.New(os.Stdout, "[api] ", log.Ldate|log.Ltime)
-	apiLogErr = log.New(os.Stderr, "[api] ", log.Ldate|log.Ltime)
+	apiLogErr = log.New(os.Stderr, "ERROR [api] ", log.Ldate|log.Ltime)
 )
 
 type directoryEntry struct {
