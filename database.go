@@ -74,7 +74,7 @@ func FinalizeDB() {
 }
 
 func ValidateUser(sessionUser *goth.User) bool {
-	if session.Email == "" {
+	if sessionUser.Email == "" {
 		return false
 	}
 
