@@ -18,19 +18,19 @@ const DarkStyle = {
 }
 
 const SizeRendered = (size) => {
-  var unit = 'B'
+  var unit = ' B'
   if (size >= 1024) {
     size /= 1024
-    unit = 'KB'
+    unit = ' KB'
     if (size >= 1024) {
       size /= 1024
-      unit = 'MB'
+      unit = ' MB'
       if (size >= 1024) {
         size /= 1024
-        unit = 'GB'
+        unit = ' GB'
         if (size >= 1024) {
           size /= 1024
-          unit = 'TB'
+          unit = ' TB'
         }
       }
     }
