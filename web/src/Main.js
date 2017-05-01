@@ -36,7 +36,7 @@ const SizeRendered = (size) => {
     }
   }
 
-  return size + unit
+  return size.toFixed(2) + unit
 }
 
 const EntryRenderer = (props) => (
