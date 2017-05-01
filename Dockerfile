@@ -13,10 +13,10 @@ COPY . /go/src/github.com/m-lima/browsify
 # Build
 RUN /go/src/github.com/m-lima/browsify/make.sh -o /opt/browsify
 
+# Document the ports used by the image
+EXPOSE 80
+EXPOSE 443
+
 # Run the server command by default when the container starts.
 WORKDIR /opt/browsify
 ENTRYPOINT /opt/browsify/browsify -c /opt/browsify/browsify.conf
-
-# Document that the service listens on port 8080.
-EXPOSE 80
-EXPOSE 443

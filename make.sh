@@ -127,7 +127,7 @@ then
   pushd web &> /dev/null
   npm install &&  npm run build
 
-  if [ $? ]
+  if [ $? -eq 0 ]
   then
     echo "[32mDone[m"
     popd &> /dev/null
@@ -165,7 +165,7 @@ then
   echo "[32mBuilding back-end[m"
   go get && go install
 
-  if [ $? ]
+  if [ $? -eq 0 ]
   then
     echo "[32mDone[m"
   else

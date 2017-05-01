@@ -1,4 +1,4 @@
-[ ]   Better logging
+[x]   Better logging
 [ ]   Admin panel
 [ ]   Show stars
 [ ] ? Plugin support
