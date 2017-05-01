@@ -17,6 +17,28 @@ const DarkStyle = {
   color: 'lightGray'
 }
 
+const SizeRendered = (size) => {
+  var unit = 'B'
+  if (size >= 1024) {
+    size /= 1024
+    unit = 'KB'
+    if (size >= 1024) {
+      size /= 1024
+      unit = 'MB'
+      if (size >= 1024) {
+        size /= 1024
+        unit = 'GB'
+        if (size >= 1024) {
+          size /= 1024
+          unit = 'TB'
+        }
+      }
+    }
+  }
+
+  return size + unit
+}
+
 const EntryRenderer = (props) => (
   <tr>
     <td>
@@ -31,7 +53,7 @@ const EntryRenderer = (props) => (
         : <a href={Constants.api + props.base + props.entry.Name}>{props.entry.Name}</a>
       }
     </td>
-    <td>{props.entry.Size}</td>
+    <td>{props.entry.Directory ? '' : SizeRendered(props.entry.Size)}</td>
     <td>{new Date(props.entry.Date).toLocaleString()}</td>
   </tr>
 )
