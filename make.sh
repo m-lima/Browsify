@@ -185,11 +185,11 @@ then
   mkdir "$OUTPUT_FOLDER"
   cp "$GOPATH/bin/$PROJECT" "$OUTPUT_FOLDER"/.
   cp -r web/build "$OUTPUT_FOLDER/web"
-  cp *.hide "$OUTPUT_FOLDER/." 2> /dev/null
+  cp secrets/* "$OUTPUT_FOLDER/." 2> /dev/null
   cp *.conf "$OUTPUT_FOLDER/." 2> /dev/null
 
 else
-  cp *.hide "$OUTPUT_FOLDER/." 2> /dev/null
+  cp secrets/ "$OUTPUT_FOLDER/." 2> /dev/null
   cp *.conf "$OUTPUT_FOLDER/." 2> /dev/null
 
   if [ $BUILD_BACK ]
