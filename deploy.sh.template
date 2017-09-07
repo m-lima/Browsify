@@ -1,0 +1,62 @@
+#!/bin/bash
+
+start() {
+  echo Starting..
+
+  docker container prune --force
+  docker image prune --force
+  docker volume prune --force
+
+  # POSTGRES
+  RUNNING=$(docker inspect --format="{{ .State.Running }}" postgres 2> /dev/null)
+  if [ $? -ne 0 ]
+  then
+    docker run --name postgres -e POSTGRES_USER=$PG_USER -e PGDATA=/data -e POSTGRES_PASSWORD=$PG_PASS --volume $PG_DATA:/data -d postgres
+  elif [ "$RUNNING" == "false" ]
+  then
+    docker start postgres
+  fi
+
+  # BROWSIFY
+  RUNNING=$(docker inspect --format="{{ .State.Running }}" browsify 2> /dev/null)
+  if [ $? -ne 0 ]
+  then
+    docker run --link postgres:postgres --publish 80:80 --publish 443:443 --volume $BROSIFY_DATA:/public --name browsify --rm browsify >> /var/log/browsify.log 2>&1
+  elif [ "$RUNNING" == "false" ]
+  then
+    docker start -a browsify >> /var/log/browsify.log 2>&1
+  fi
+}
+
+stop() {
+  echo Stopping..
+
+  docker kill --signal="SIGINT" browsify
+  docker stop browsify
+  docker stop postgres
+
+  docker container prune --force
+  docker image prune --force
+  docker volume prune --force
+}
+
+build() {
+  echo Building..
+
+  stop
+  if [[ "$PWD" == "$REPO_DIR" ]]
+  then
+    SAME_PWD=1
+  else
+    pushd "$REPO_DIR" > /dev/null
+  fi
+
+  docker build -t browsify .
+
+  [ -z $SAME_PWD ] && popd > /dev/null
+}
+
+
+case $1 in
+  build|start|stop) "$1" ;;
+esac
