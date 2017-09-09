@@ -4,6 +4,7 @@ web/elm-stuff/*
 
 # Vim
 *.swp
+**/*.idea
 
 # Build
 browsify
