@@ -1,3 +1,4 @@
+//OpenID authentication package for Securidash
 package auther
 
 import (
@@ -7,8 +8,6 @@ import (
 	"os"
 	"time"
 
-	"crypto/sha256"
-	"encoding/hex"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -20,12 +19,14 @@ import (
 	"github.com/markbates/goth/providers/openidConnect"
 )
 
+// Redirect paths for authentication
 type Paths struct {
 	HostedDomain           string
 	RedirectFailure        string
 	DefaultRedirectSuccess string
 }
 
+// Establish the authentication as OpenID-Connect
 const (
 	providerName = "openid-connect"
 	autherStore  = "auther-store"
@@ -50,7 +51,9 @@ var (
 func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
+	// Establish a filesystem cookie store
 	store := sessions.NewFilesystemStore(os.TempDir(), []byte(autherStore))
+	// Set the MaxLength to avoid `securecookie: the value is too long` issue
 	store.MaxLength(math.MaxInt64)
 	gothic.Store = store
 
@@ -59,6 +62,7 @@ func init() {
 	}
 }
 
+// Load the OAuth configuration files
 func loadOauthConfig(idFile string, secretFile string) (id string, secret string, err error) {
 	file, err := ioutil.ReadFile(idFile)
 	if err != nil {
@@ -75,18 +79,7 @@ func loadOauthConfig(idFile string, secretFile string) (id string, secret string
 	return
 }
 
-func generateState() string {
-	bytes := make([]byte, 1024)
-	for i := 0; i < 1024; i++ {
-		bytes[i] = byte(rand.Int())
-	}
-
-	sha := sha256.New()
-	sha.Write(bytes)
-
-	return hex.EncodeToString(sha.Sum(nil))
-}
-
+// Helper function to retrieve the session based on the request
 func getSession(request *http.Request) (goth.Session, error) {
 	session, err := gothic.Store.Get(request, providerName+gothic.SessionName)
 	if err != nil {
@@ -101,6 +94,8 @@ func getSession(request *http.Request) (goth.Session, error) {
 	return provider.UnmarshalSession(value.(string))
 }
 
+// Initialize the OpenID authentication
+// This is needed in order to load the configuration files associated with the ConnectID key
 func InitProvider(domain string, authCallback string, clientID string, clientSecret string) error {
 	if domain == "" || authCallback == "" || clientID == "" || clientSecret == "" {
 		log.Fatal("Arguments cannot be empty")
@@ -123,6 +118,7 @@ func InitProvider(domain string, authCallback string, clientID string, clientSec
 	}
 }
 
+// Login entry-point to authenticate a user
 func LoginHandler(response http.ResponseWriter, request *http.Request) {
 	rawURL, err := gothic.GetAuthURL(response, request)
 	if err != nil {
@@ -136,16 +132,17 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// Inject the hosted domain
 	query := url.Query()
 	query.Add("hd", PathConfig.HostedDomain)
 
 	session, err := gothic.Store.Get(request, providerName+gothic.SessionName)
 	if err == nil && session != nil {
-		state := generateState()
-		session.Values["state"] = state
+
+		// Inject the redirect URL for after after logging in
+		// This will match the current URL where the user is coming from
 		session.Values["redirect"] = request.Header.Get("Referer")
 		session.Save(request, response)
-		query.Set("state", state)
 	} else {
 		if session == nil {
 			LogErr.Println("Session is null")
@@ -162,9 +159,12 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
 	http.Redirect(response, request, url.String(), http.StatusTemporaryRedirect)
 }
 
+// Finalizes the login process
+// This callcabk is called by Google when returning from their login screen
 func AuthCallback(response http.ResponseWriter, request *http.Request) {
 	url := request.URL
 
+	// Check hosted domain
 	{
 		if hd := url.Query().Get("hd"); PathConfig.HostedDomain != "" && hd != PathConfig.HostedDomain {
 			LogStd.Println("Hosted domain did not match. Got", hd)
@@ -176,37 +176,23 @@ func AuthCallback(response http.ResponseWriter, request *http.Request) {
 
 	redirectSuccess := PathConfig.DefaultRedirectSuccess
 
-	{
-		session, err := gothic.Store.Get(request, providerName+gothic.SessionName)
-		if session != nil && err == nil {
-			state := session.Values["state"]
-			redirectSuccess = session.Values["redirect"].(string)
-
-			queryState := url.Query().Get("state")
-			if queryState != state {
-				LogStd.Printf(`State did not match.
-Expected: %s
-     Got: %s`, state, queryState)
-				gothic.Logout(response, request)
-				http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusPermanentRedirect)
-				return
-			}
-		} else {
-			gothic.Logout(response, request)
-			http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusPermanentRedirect)
-			return
-		}
+	// Prepare redirect
+	session, err := gothic.Store.Get(request, providerName+gothic.SessionName)
+	if session != nil && err == nil {
+		redirectSuccess = session.Values["redirect"].(string)
 	}
 
 	user, err := gothic.CompleteUserAuth(response, request)
-
-	if !UserValidator(&user) {
+	if err != nil {
+		LogErr.Println("failed to complete login:", err)
 		gothic.Logout(response, request)
 		http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusPermanentRedirect)
 		return
 	}
 
-	if err != nil {
+	// Hand-over finalization to calling process callback
+	if !UserValidator(&user) {
+		LogStd.Println("user invalid:", user)
 		gothic.Logout(response, request)
 		http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusPermanentRedirect)
 		return
@@ -215,6 +201,7 @@ Expected: %s
 	http.Redirect(response, request, redirectSuccess, http.StatusPermanentRedirect)
 }
 
+// Retrieve the session user
 func GetUser(response http.ResponseWriter, request *http.Request) (goth.User, error) {
 	session, err := getSession(request)
 	if err != nil || session == nil {
@@ -224,6 +211,7 @@ func GetUser(response http.ResponseWriter, request *http.Request) (goth.User, er
 	return provider.FetchUser(session)
 }
 
+// Logs out and redirects to the URL from where the user is coming from
 func LogoutHandler(response http.ResponseWriter, request *http.Request) {
 	if err := gothic.Logout(response, request); err != nil {
 		LogErr.Println("Failed: session is null")

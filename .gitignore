@@ -1,4 +1,6 @@
-*.hide
+# Secrets
+**/*.hide
+secrets
 
 web/elm-stuff/*
 
