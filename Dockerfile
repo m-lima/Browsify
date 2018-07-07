@@ -1,22 +1,40 @@
+## Front-end
+FROM node
+
+WORKDIR /web
+
+COPY web /web
+
+# Build
+RUN npm install && npm run build
+
+## Backend
 # Start from a Debian image with the latest version of Go installed
 # and a workspace (GOPATH) configured at /go.
 FROM golang
 RUN go version
 
-# Install NPM
-RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
-    && apt-get install -y nodejs
+WORKDIR /go/src/github.com/m-lima/browsify
 
 # Copy the local package files to the container's workspace.
-COPY . /go/src/github.com/m-lima/browsify
+COPY *.go /go/src/github.com/m-lima/browsify/
+COPY auther /go/src/github.com/m-lima/browsify/auther
 
 # Build
-RUN /go/src/github.com/m-lima/browsify/make.sh -o /opt/browsify
+RUN go get && go install
+
+## Main
+FROM golang
+
+COPY --from=0 /web/build /opt/browsify/web
+COPY --from=1 /go/bin/browsify /opt/browsify/.
+COPY secrets/* /opt/browsify/
+COPY *.conf /opt/browsify/
+COPY web/src/img/folder.png /opt/browsify/web/static/
 
 # Document the ports used by the image
 EXPOSE 80
-EXPOSE 443
 
 # Run the server command by default when the container starts.
 WORKDIR /opt/browsify
-ENTRYPOINT /opt/browsify/browsify -c /opt/browsify/browsify.conf
+CMD ["./browsify"]
