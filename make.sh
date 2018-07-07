@@ -125,7 +125,7 @@ if [[ "$BUILD_FRONT" ]]
 then
   echo "[32mBuilding front-end..[m"
   pushd web &> /dev/null
-  npm install &&  npm run build
+  npm install && npm run build
 
   if [ $? -eq 0 ]
   then
@@ -185,13 +185,8 @@ then
   mkdir "$OUTPUT_FOLDER"
   cp "$GOPATH/bin/$PROJECT" "$OUTPUT_FOLDER"/.
   cp -r web/build "$OUTPUT_FOLDER/web"
-  cp secrets/* "$OUTPUT_FOLDER/." 2> /dev/null
-  cp *.conf "$OUTPUT_FOLDER/." 2> /dev/null
 
 else
-  cp secrets/ "$OUTPUT_FOLDER/." 2> /dev/null
-  cp *.conf "$OUTPUT_FOLDER/." 2> /dev/null
-
   if [ $BUILD_BACK ]
   then
     cp "$GOPATH/bin/$PROJECT" "$OUTPUT_FOLDER"/.
@@ -202,5 +197,9 @@ else
     cp -r web/build "$OUTPUT_FOLDER/web"
   fi
 fi
+
+cp secrets/* "$OUTPUT_FOLDER/." 2> /dev/null
+cp *.conf "$OUTPUT_FOLDER/." 2> /dev/null
+cp web/src/img/folder.png "$OUTPUT_FOLDER"/web/static/.
 
 popd &> /dev/null
