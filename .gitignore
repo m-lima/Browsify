@@ -1,3 +1,5 @@
+**/.DS_Store
+
 # Secrets
 **/*.hide
 secrets
@@ -15,3 +17,18 @@ browsify.exe
 # Environment specific files
 browsify.conf
 deploy.sh
+
+# dependencies
+web/node_modules
+
+# testing
+web/coverage
+
+# production
+web/build
+
+# misc
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+
