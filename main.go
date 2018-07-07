@@ -4,7 +4,6 @@ import (
 	"flag"
 	"log"
 	"os"
-	"sync"
 
 	"net/http"
 
@@ -35,42 +34,6 @@ func staticHandler(response http.ResponseWriter, request *http.Request) {
 	} else {
 		response.WriteHeader(http.StatusNotFound)
 	}
-}
-
-func launchServer(mux *http.ServeMux) {
-	var waiter sync.WaitGroup
-	waiter.Add(2)
-
-	{
-		go func() {
-			defer waiter.Done()
-			http.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
-				http.Redirect(response, request, "https://"+Configuration.Server.Host+request.URL.Path, http.StatusPermanentRedirect)
-			})
-			err := http.ListenAndServe("", nil)
-			if err != nil {
-				log.Fatal("Could not start HTTP server:\n", err)
-			}
-		}()
-	}
-
-	{
-		go func() {
-			defer waiter.Done()
-			server := http.Server{
-				Addr:     "",
-				Handler:  mux,
-				ErrorLog: serverLogger,
-			}
-
-			err := server.ListenAndServeTLS(Configuration.Ssl.Certificate, Configuration.Ssl.Key)
-			if err != nil {
-				log.Fatal("Could not start HTTPS server:\n", err)
-			}
-		}()
-	}
-
-	waiter.Wait()
 }
 
 func main() {
@@ -141,5 +104,15 @@ func main() {
 	mux.HandleFunc(login, auther.LoginHandler)
 	mux.HandleFunc(logout, auther.LogoutHandler)
 
-	launchServer(mux)
+	// Start server
+	server := http.Server{
+		Addr:     "",
+		Handler:  mux,
+		ErrorLog: serverLogger,
+	}
+
+	err = server.ListenAndServe()
+	if err != nil {
+		log.Fatal("Could not start server:\n", err)
+	}
 }

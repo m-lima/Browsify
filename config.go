@@ -28,16 +28,10 @@ type configOauth struct {
 	Id     string
 }
 
-type configSsl struct {
-	Certificate string
-	Key         string
-}
-
 type configuration struct {
 	Db     configDB
 	Server configServer
 	Oauth  configOauth
-	Ssl    configSsl
 }
 
 var (
@@ -50,10 +44,6 @@ var (
 		Oauth: configOauth{
 			Secret: "oauth.client.secret",
 			Id:     "oauth.client.id",
-		},
-		Ssl: configSsl{
-			Certificate: "server.crt",
-			Key:         "server.key",
 		},
 		Server: configServer{
 			Host:         "localhost",
