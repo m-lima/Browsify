@@ -55,12 +55,14 @@ func ApiHandler(response http.ResponseWriter, request *http.Request) {
 
 	sessionUser, err := auther.GetUser(response, request)
 	if err != nil {
+		apiLogStd.Println("API request unauthorized:", err)
 		response.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	user, err := ReadUser(&sessionUser)
 	if err != nil {
+		apiLogStd.Println("API request forbidden:", err)
 		response.WriteHeader(http.StatusForbidden)
 		return
 	}

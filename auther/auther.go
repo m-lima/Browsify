@@ -87,7 +87,7 @@ func getSession(request *http.Request) (goth.Session, error) {
 
 	value := session.Values[providerName]
 	if value == nil {
-		return nil, errors.New("could not find a session for the request")
+		return nil, errors.New("could not find the session value for the request")
 	}
 
 	return provider.UnmarshalSession(value.(string))
@@ -149,7 +149,7 @@ func LoginHandler(response http.ResponseWriter, request *http.Request) {
 		if err != nil {
 			LogErr.Println("Error found: ", err)
 		}
-		http.Redirect(response, request, "/login", http.StatusPermanentRedirect)
+		http.Redirect(response, request, PathConfig.RedirectFailure, http.StatusPermanentRedirect)
 		return
 	}
 
