@@ -1,13 +1,3 @@
-## Front-end
-FROM node
-
-WORKDIR /web
-
-COPY web /web
-
-# Build
-RUN npm install && npm run build
-
 ## Backend
 # Start from a Debian image with the latest version of Go installed
 # and a workspace (GOPATH) configured at /go.
@@ -26,8 +16,8 @@ RUN go get && go install
 ## Main
 FROM golang
 
-COPY --from=0 /web/build /opt/browsify/web
-COPY --from=1 /go/bin/browsify /opt/browsify/.
+COPY --from=browsify-web /web/build /opt/browsify/web
+COPY --from=0 /go/bin/browsify /opt/browsify/.
 COPY secrets/* /opt/browsify/
 COPY *.conf /opt/browsify/
 COPY web/src/img/folder.png /opt/browsify/web/static/
