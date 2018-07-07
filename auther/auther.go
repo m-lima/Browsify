@@ -1,4 +1,3 @@
-//OpenID authentication package for Securidash
 package auther
 
 import (

@@ -129,3 +129,9 @@ func UpdateUser(updatedUser *User) error {
 		return err
 	}
 }
+
+func ReadAllUsers() (*[]User, error) {
+	var users = new([]User)
+	err := db.Order("email asc").Find(users).Error
+	return users, err
+}
