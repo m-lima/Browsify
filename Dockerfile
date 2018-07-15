@@ -20,7 +20,6 @@ COPY --from=browsify-web /web/build /opt/browsify/web
 COPY --from=0 /go/bin/browsify /opt/browsify/.
 COPY secrets/* /opt/browsify/
 COPY *.conf /opt/browsify/
-COPY web/src/img/folder.png /opt/browsify/web/static/
 
 # Document the ports used by the image
 EXPOSE 80
